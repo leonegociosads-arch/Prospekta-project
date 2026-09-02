@@ -1,0 +1,1093 @@
+<title>Prospekta · Plano de Construção</title>
+<meta name="description" content="Análise de arquitetura e plano de desenvolvimento em etapas para o Prospekta, uma ferramenta pessoal de prospecção de leads de custo mínimo." />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #14232f;
+    --paper: #f5f6f2;
+    --card: #ffffff;
+    --slate: #566572;
+    --slate-soft: #7d8a95;
+    --line: #dce0d8;
+    --line-soft: #e8ebe4;
+    --signal: #b4741f;
+    --signal-soft: #f0e3cf;
+    --good: #2f7d53;
+    --warn: #b07d19;
+    --crit: #b0402f;
+    --good-bg: #e3efe6;
+    --warn-bg: #f3e9d3;
+    --crit-bg: #f4e0da;
+    --radius: 6px;
+    --maxw: 720px;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ink: #e7ece7;
+      --paper: #0e1720;
+      --card: #16232d;
+      --slate: #a9b6bf;
+      --slate-soft: #8593a0;
+      --line: #26343f;
+      --line-soft: #1d2a34;
+      --signal: #e0a552;
+      --signal-soft: #33291a;
+      --good: #6bbd8c;
+      --warn: #d7ab5b;
+      --crit: #db8573;
+      --good-bg: #16281f;
+      --warn-bg: #2c2416;
+      --crit-bg: #2e1c17;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e7ece7;
+    --paper: #0e1720;
+    --card: #16232d;
+    --slate: #a9b6bf;
+    --slate-soft: #8593a0;
+    --line: #26343f;
+    --line-soft: #1d2a34;
+    --signal: #e0a552;
+    --signal-soft: #33291a;
+    --good: #6bbd8c;
+    --warn: #d7ab5b;
+    --crit: #db8573;
+    --good-bg: #16281f;
+    --warn-bg: #2c2416;
+    --crit-bg: #2e1c17;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+
+  /* ---- Top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-top: 12px; padding-bottom: 12px; }
+  .brand { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 17px; letter-spacing: .01em; }
+  .brand span { color: var(--signal); }
+  .topbar nav { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--slate-soft); display: flex; gap: 14px; }
+  .topbar nav a { color: var(--slate-soft); text-decoration: none; }
+  .topbar nav a:hover { color: var(--signal); }
+  @media (max-width: 620px) { .topbar nav { display: none; } }
+
+  /* ---- Hero ---- */
+  header.hero { padding: 54px 0 30px; border-bottom: 1px solid var(--line); }
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--signal); margin-bottom: 16px;
+  }
+  header.hero h1 {
+    font-family: 'Fraunces', Georgia, serif; font-weight: 500;
+    font-size: clamp(30px, 6vw, 44px); line-height: 1.08; margin: 0 0 16px;
+    text-wrap: balance; letter-spacing: -0.01em;
+  }
+  header.hero p.lede { font-size: 17px; color: var(--slate); margin: 0; max-width: 62ch; }
+  .hero-meta {
+    margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .hero-meta span {
+    border: 1px solid var(--line); border-radius: 40px; padding: 4px 11px; color: var(--slate);
+    background: var(--card);
+  }
+
+  /* ---- Sections ---- */
+  section { padding: 40px 0; border-bottom: 1px solid var(--line-soft); }
+  section > .wrap > h2 {
+    font-family: 'Fraunces', Georgia, serif; font-weight: 500;
+    font-size: clamp(22px, 4vw, 28px); line-height: 1.15; margin: 0 0 6px;
+    display: flex; gap: 14px; align-items: baseline; text-wrap: balance;
+  }
+  section > .wrap > h2 .num {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;
+    color: var(--signal); flex: none; padding-top: 3px;
+  }
+  .sub { color: var(--slate-soft); font-size: 14px; margin: 0 0 22px; padding-left: 30px; }
+  @media (max-width: 520px) { .sub { padding-left: 0; } section > .wrap > h2 { flex-direction: column; gap: 4px; } }
+
+  h3 {
+    font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 16px;
+    margin: 26px 0 8px; color: var(--ink);
+  }
+  p { margin: 0 0 14px; }
+  a { color: var(--signal); text-underline-offset: 2px; }
+  strong { font-weight: 600; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--slate-soft); }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.87em;
+    background: var(--signal-soft); color: var(--ink);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  pre {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.6;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; overflow-x: auto; margin: 0 0 16px; color: var(--slate);
+  }
+  pre b { color: var(--ink); font-weight: 500; }
+
+  .callout {
+    border-left: 3px solid var(--signal); background: var(--card);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px 18px; margin: 18px 0; font-size: 14.5px;
+  }
+  .callout.rec { border-left-color: var(--good); }
+  .callout strong.tag {
+    display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; color: var(--signal);
+  }
+  .callout.rec strong.tag { color: var(--good); }
+
+  /* ---- Tables ---- */
+  .tablewrap { overflow-x: auto; margin: 0 0 18px; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 520px; }
+  th, td { text-align: left; padding: 9px 13px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--slate-soft); background: var(--card); font-weight: 500;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.mono, .num-cell { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .yes { color: var(--good); font-weight: 600; }
+  .no { color: var(--slate-soft); }
+  .cost { color: var(--crit); font-weight: 600; }
+  .free { color: var(--good); font-weight: 600; }
+
+  /* ---- Pills ---- */
+  .pill {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 2px 8px; border-radius: 30px; border: 1px solid var(--line);
+    color: var(--slate); background: var(--card); white-space: nowrap;
+  }
+  .pill.g { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--line)); background: var(--good-bg); }
+  .pill.w { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); background: var(--warn-bg); }
+  .pill.c { color: var(--crit); border-color: color-mix(in srgb, var(--crit) 40%, var(--line)); background: var(--crit-bg); }
+
+  /* ---- Cards ---- */
+  .cards { display: grid; gap: 12px; margin: 4px 0 18px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 15px 17px;
+  }
+  .card h4 {
+    margin: 0 0 4px; font-size: 14.5px; font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .card p { margin: 0 0 10px; font-size: 13.5px; color: var(--slate); }
+  .card .facts { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* ---- Score bars ---- */
+  .score-model { margin: 8px 0 16px; display: grid; gap: 10px; }
+  .score-row { display: grid; grid-template-columns: 1fr; gap: 4px; }
+  .score-row .label { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; }
+  .score-row .label b { font-weight: 600; }
+  .score-row .label .wt { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--signal); }
+  .bar { height: 8px; background: var(--line-soft); border-radius: 20px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--signal); border-radius: 20px; }
+  .score-row .note { font-size: 12.5px; color: var(--slate-soft); }
+
+  /* ---- Flow diagram ---- */
+  .flow { display: grid; gap: 0; margin: 6px 0 18px; counter-reset: step; }
+  .flow .step {
+    position: relative; padding: 12px 0 12px 40px; border-left: 2px solid var(--line);
+    margin-left: 10px;
+  }
+  .flow .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: -13px; top: 12px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    display: flex; align-items: center; justify-content: center; color: var(--slate);
+  }
+  .flow .step:last-child { border-left-color: transparent; }
+  .flow .step b { font-weight: 600; }
+  .flow .step span { display: block; font-size: 13px; color: var(--slate); }
+  .flow .step .who {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--slate-soft); margin-top: 2px;
+  }
+
+  /* ---- Ordered build list ---- */
+  ol.build { counter-reset: b; list-style: none; padding: 0; }
+  ol.build > li {
+    counter-increment: b; position: relative; padding: 10px 0 10px 44px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  ol.build > li:last-child { border-bottom: none; }
+  ol.build > li::before {
+    content: counter(b); position: absolute; left: 0; top: 10px;
+    font-family: 'Fraunces', serif; font-size: 18px; color: var(--signal); font-weight: 600;
+    width: 30px; text-align: right;
+  }
+  ol.build > li b { font-weight: 600; }
+  ol.build .tag2 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--slate-soft); }
+
+  footer {
+    padding: 40px 0 60px; color: var(--slate-soft); font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 620px) { .two-col { grid-template-columns: 1fr; gap: 4px; } }
+
+  :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 3px; }
+</style>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand">Prospekta<span>.</span></div>
+    <nav>
+      <a href="#arquitetura">arquitetura</a>
+      <a href="#places">places</a>
+      <a href="#score">score</a>
+      <a href="#ordem">ordem</a>
+      <a href="#anexo-gcp">anexo gcp</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Plano de construção · v1 · fonte: Google Places API</div>
+    <h1>Prospekta: encontrar os melhores leads gastando quase nada</h1>
+    <p class="lede">
+      Uma análise completa antes da primeira linha de código: como a ferramenta é organizada,
+      como usar a Google Places API sem sair da cota gratuita, o que dá pra fazer só com código,
+      onde a IA realmente compensa, e em que ordem construir. Escrito para quem está começando.
+    </p>
+    <div class="hero-meta">
+      <span>Next.js + TypeScript</span>
+      <span>Supabase Free</span>
+      <span>Google Places API (cota grátis)</span>
+      <span>Cache + orçamento por pesquisa</span>
+      <span>Worker local</span>
+      <span>IA só no topo do funil</span>
+    </div>
+    <div class="callout" style="margin-top:22px">
+      <strong class="tag">O que mudou da v0 para a v1</strong>
+      O teste no OpenStreetMap deu <strong>8 estabelecimentos no total</strong> em Iguape + Ilha Comprida — cobertura insuficiente. O OSM sai como fonte principal de descoberta. Entra a <strong>Google Places API</strong>, com uma camada inteira de controle de custo desenhada em volta dela (cache, deduplicação por Place ID, orçamento de chamadas por pesquisa, teto mensal). As fontes agora são <strong>plugáveis</strong>: trocar ou somar outra fonte no futuro não mexe no resto do sistema.
+    </div>
+  </div>
+</header>
+
+<!-- 1 -->
+<section id="arquitetura">
+  <div class="wrap">
+    <h2><span class="num">01</span> Arquitetura geral</h2>
+    <p class="sub">A visão de cima: quais peças existem e como conversam entre si.</p>
+
+    <p>O Prospekta tem <strong>quatro peças</strong>, e só. Quanto menos peças, menos coisa pra aprender, instalar e depurar.</p>
+
+    <h3>1. O painel (aplicação web) — Next.js + TypeScript</h3>
+    <p>É a tela que você abre no navegador. Nela você cria uma pesquisa (cidade, raio, nicho), acompanha o progresso, vê o ranking de leads e abre o diagnóstico de cada um. Roda no seu computador durante o desenvolvimento (<code>localhost:3000</code>) e, se um dia quiser, sobe de graça na Vercel.</p>
+
+    <h3>2. O banco de dados — Supabase (PostgreSQL) Free</h3>
+    <p>É onde tudo fica guardado: pesquisas, leads, análises de site, sinais de anúncio, scores. O Supabase é um Postgres hospedado de graça, com um painel visual pra ver as tabelas e uma biblioteca pronta pra o Next.js conversar com ele.</p>
+
+    <h3>3. O trabalhador (worker) — um script Node que roda na sua máquina</h3>
+    <p>Encontrar empresas e analisar dezenas de sites é <strong>lento</strong> (segundos por site). Isso não pode travar o painel. Então existe um segundo programa — o <em>worker</em> — que fica olhando o banco, pega tarefas pendentes (&ldquo;analisar o site do lead X&rdquo;), executa e grava o resultado. Você liga ele com um comando (<code>npm run worker</code>) quando quer processar uma pesquisa.</p>
+
+    <h3>4. Serviços externos — chamados pelo worker, sempre passando pelo &ldquo;porteiro&rdquo;</h3>
+    <p>Google Places API (lista de empresas + telefone + site + avaliações), PageSpeed Insights (desempenho do site), Meta Ad Library (indícios de anúncio) e, só no fim do funil, uma API de IA barata. Nenhuma chamada à Google sai direto: ela passa primeiro por dois módulos internos —</p>
+    <ul>
+      <li><strong>Cache</strong> — &ldquo;já temos esse dado no banco e ainda está válido? Então não chama.&rdquo;</li>
+      <li><strong>Orçamento (o porteiro)</strong> — &ldquo;essa pesquisa já gastou o limite de chamadas? O teto do mês estourou? Então bloqueia e avisa.&rdquo;</li>
+    </ul>
+    <p>O painel nunca fala direto com serviços externos — só lê e escreve no Supabase.</p>
+
+    <pre><b>[ Você ]</b>
+   │  cria pesquisa no navegador
+   ▼
+<b>[ Painel Next.js ]</b> ──grava──▶ <b>[ Supabase / Postgres ]</b>
+   ▲                                      │  tarefas + cache + registro de consumo
+   │ lê leads + scores                    ▼
+   └───────────────────────── <b>[ Worker (Node, sua máquina) ]</b>
+                                          │
+                          ┌───────────────┴───────────────┐
+                          ▼                               ▼
+                 <b>[ Cache ]</b> → <b>[ Orçamento ]</b>            código próprio
+                          │  (só passa se liberar)        (análise de site,
+                          ▼                                score, sem custo)
+        Google Places · PageSpeed · Meta Ad Library · IA (top N)</pre>
+
+    <div class="callout rec">
+      <strong class="tag">Duas recomendações que se mantêm</strong>
+      <strong>Sem n8n no MVP</strong> — a orquestração é feita por funções TypeScript no worker (seção 07). E <strong>fontes plugáveis</strong>: existe uma &ldquo;interface de fonte de dados&rdquo; com dois métodos — <code>descobrir(região, raio, nicho)</code> e <code>detalhar(placeId)</code>. Hoje só a implementação <code>GooglePlaces</code> existe; amanhã dá pra somar <code>OSM</code>, <code>CNPJ</code> ou entrada manual sem tocar em score, banco ou telas.
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="fluxo">
+  <div class="wrap">
+    <h2><span class="num">02</span> Fluxo completo de dados</h2>
+    <p class="sub">O caminho que um lead percorre, do &ldquo;não existe&rdquo; até &ldquo;pronto pra abordar&rdquo;.</p>
+
+    <div class="flow">
+      <div class="step"><b>Você define a pesquisa</b><span>Região em texto (&ldquo;Iguape SP&rdquo;), raio em km, nicho e um limite de leads (padrão 20). O worker resolve o texto da região em coordenadas — 1 chamada de Geocoding, guardada em cache pra nunca repetir a mesma cidade.</span><span class="who">Worker · Geocoding (cache)</span></div>
+      <div class="step"><b>Porteiro do orçamento</b><span>Antes de gastar qualquer chamada: essa pesquisa tem orçamento (ex.: máx. 5 chamadas)? O teto do mês está livre? Se não, para aqui e avisa.</span><span class="who">Worker · módulo orçamento</span></div>
+      <div class="step"><b>Descoberta de empresas</b><span>Uma chamada de <em>Text Search</em> à Google Places: &ldquo;advocacia em Iguape SP&rdquo;, restrita ao círculo (centro + raio). Volta até 20 empresas com nome, endereço, localização, telefone, site, nota e nº de avaliações — tudo numa chamada só.</span><span class="who">Worker · Places Text Search</span></div>
+      <div class="step"><b>Deduplicação por Place ID + cache</b><span>Cada empresa tem um <code>Place ID</code> único da Google. O worker faz <em>upsert</em> por esse ID: se já existe no banco (de outra pesquisa, dentro da validade), reaproveita — zero chamada nova. Senão, cria o lead e guarda a resposta crua no cache.</span><span class="who">Worker · Supabase</span></div>
+      <div class="step"><b>Registro de consumo</b><span>Cada chamada externa vira uma linha em <code>api_usage</code>: quando, qual API, qual &ldquo;faixa&rdquo; de campos, custo estimado. O painel soma isso por mês.</span><span class="who">Worker · Supabase</span></div>
+      <div class="step"><b>Resolução de contatos (só o que faltou)</b><span>Site e telefone geralmente já vieram do Places. Só quando faltam, o worker abre a home do site e procura. Redes sociais saem dos links da própria home.</span><span class="who">Worker · código próprio</span></div>
+      <div class="step"><b>Análise técnica do site</b><span>Baixa o HTML e os cabeçalhos. Verifica HTTPS, viewport, WhatsApp, telefone, formulário, CTA, página de contato, Meta Pixel, Google Analytics, Google Ads. Pede a nota de desempenho ao PageSpeed. <strong>Nada disso custa Google Places.</strong></span><span class="who">Worker · código + PageSpeed API</span></div>
+      <div class="step"><b>Indícios de tráfego pago</b><span>Consulta a Meta Ad Library pelo nome da página e junta sinais do próprio site (tag de conversão do Google Ads, parâmetros de campanha). Gera um veredito com nível de confiança — nunca uma afirmação absoluta.</span><span class="who">Worker · Meta Ad Library + código</span></div>
+      <div class="step"><b>Presença em redes (parte objetiva)</b><span>O perfil existe? Tem bio? Tem link? Qual a data do último post? Só o que dá pra medir sem opinião.</span><span class="who">Worker · código (melhor esforço)</span></div>
+      <div class="step"><b>Score de Oportunidade automático</b><span>Uma fórmula em código transforma todos os sinais num número de 0 a 100 e guarda a explicação de cada parte. Roda em <em>todos</em> os leads.</span><span class="who">Worker · código puro</span></div>
+      <div class="step"><b>Ranking no painel</b><span>Os leads aparecem ordenados do melhor pro pior. Você filtra, revisa e marca favoritos.</span><span class="who">Painel</span></div>
+      <div class="step"><b>Enriquecimento profundo (só nos priorizados)</b><span>Quando você marca um lead como prioritário ou abre a tela dele, aí sim o worker faz 1 chamada de <em>Place Details</em> pra buscar o que a busca não trouxe: trechos de avaliações, horário completo, telefone internacional. Resultado guardado em cache por Place ID — nunca chama duas vezes.</span><span class="who">Worker · Places Details (sob demanda)</span></div>
+      <div class="step"><b>Diagnóstico com IA (só nos melhores)</b><span>Para os ~20% do topo, a IA lê o dossiê e escreve um resumo comercial: o que está fraco, o que você pode vender, por onde entrar.</span><span class="who">Worker · API de IA barata</span></div>
+      <div class="step"><b>Abordagem personalizada</b><span>Fase futura: a IA gera uma mensagem de primeiro contato baseada no diagnóstico.</span><span class="who">Fora do MVP</span></div>
+    </div>
+
+    <p>Repare no princípio do <strong>funil de duas etapas</strong>: regras baratas rodam em tudo; a IA (cara) só toca nos leads que já provaram valer a pena.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="modulos">
+  <div class="wrap">
+    <h2><span class="num">03</span> Módulos do sistema</h2>
+    <p class="sub">Blocos de código independentes. Cada um faz uma coisa e grava seu resultado no banco.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Módulo</th><th>Responsabilidade</th><th>Usa IA?</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">sources/*</td><td>Uma pasta por fonte de dados, todas com a mesma interface (<code>descobrir</code> / <code>detalhar</code>). Hoje só <code>google-places</code>.</td><td class="no">não</td></tr>
+          <tr><td class="mono">budget</td><td>O &ldquo;porteiro&rdquo;: antes de cada chamada externa, checa o orçamento da pesquisa e o teto mensal; incrementa contadores.</td><td class="no">não</td></tr>
+          <tr><td class="mono">cache</td><td>Consulta <code>places_cache</code> e <code>region_cache</code> antes de qualquer chamada; grava a resposta crua com data de validade.</td><td class="no">não</td></tr>
+          <tr><td class="mono">usage</td><td>Registra cada chamada externa em <code>api_usage</code> com custo estimado; soma por mês.</td><td class="no">não</td></tr>
+          <tr><td class="mono">discovery</td><td>Orquestra: resolve região → chama <code>sources</code> → dedup por Place ID → grava <code>leads</code>.</td><td class="no">não</td></tr>
+          <tr><td class="mono">normalize</td><td>Deduplica (Place ID + nome/endereço aproximado), padroniza telefone/endereço.</td><td class="no">não</td></tr>
+          <tr><td class="mono">contacts</td><td>Só quando o Places não trouxe: acha site/redes abrindo a home do site.</td><td class="no">não</td></tr>
+          <tr><td class="mono">site-analysis</td><td>Todos os testes técnicos do site (HTTPS, tags, WhatsApp, formulário, desempenho…).</td><td class="no">não</td></tr>
+          <tr><td class="mono">ads-detection</td><td>Junta indícios de tráfego pago e calcula veredito + confiança.</td><td class="no">não</td></tr>
+          <tr><td class="mono">social</td><td>Métricas objetivas de redes sociais (existe, bio, link, último post).</td><td class="no">não</td></tr>
+          <tr><td class="mono">enrich</td><td>Chamada de <em>Place Details</em> — só para leads priorizados, sempre via cache + budget.</td><td class="no">não</td></tr>
+          <tr><td class="mono">scoring</td><td>A fórmula do Score de Oportunidade + pesos + explicação.</td><td class="no">não</td></tr>
+          <tr><td class="mono">ai-diagnosis</td><td>Resumo comercial qualitativo dos leads do topo.</td><td class="yes">sim</td></tr>
+          <tr><td class="mono">ai-outreach</td><td>Geração de mensagem de abordagem (fase futura).</td><td class="yes">sim</td></tr>
+          <tr><td class="mono">jobs</td><td>Fila simples: cria, pega, marca como feito/erro, tenta de novo.</td><td class="no">não</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Por que separar assim? Se a detecção de anúncio quebrar (e vai, às vezes), o resto do pipeline continua. E você consegue reprocessar só um módulo sem refazer tudo.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="paginas">
+  <div class="wrap">
+    <h2><span class="num">04</span> Estrutura das páginas</h2>
+    <p class="sub">Poucas telas. O painel é operado, não lido.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h4><code>/</code> — Painel</h4>
+        <p>Lista das pesquisas já feitas, com data, nicho, quantidade de leads e status. Botão &ldquo;Nova pesquisa&rdquo;.</p>
+      </div>
+      <div class="card">
+        <h4><code>/pesquisa/nova</code> — Formulário de pesquisa</h4>
+        <p>Campo de região em texto simples (&ldquo;Iguape SP&rdquo;), controle de raio (ex.: 1–20 km), seleção de nicho, <strong>limite de leads</strong> (padrão 20) e filtros opcionais. Mostra a estimativa: &ldquo;esta pesquisa deve usar ~1 chamada da Google&rdquo;. Ao enviar, cria a pesquisa e enfileira a descoberta.</p>
+      </div>
+      <div class="card">
+        <h4><code>/pesquisa/[id]</code> — Resultados</h4>
+        <p>Tabela de leads ordenada por score. Mostra progresso do pipeline (&ldquo;42 de 60 sites analisados&rdquo;). Filtros, busca, ordenação, exportar CSV, marcar favorito.</p>
+      </div>
+      <div class="card">
+        <h4><code>/lead/[id]</code> — Diagnóstico</h4>
+        <p>A tela mais importante. Dados da empresa, &ldquo;boletim&rdquo; do site (cada teste como aprovado/reprovado), evidências de tráfego pago com nível de confiança, presença em redes, e o <strong>score aberto</strong> — quanto cada fator contribuiu. Embaixo, o resumo da IA (quando houver).</p>
+      </div>
+      <div class="card">
+        <h4><code>/config</code> — Configurações e consumo</h4>
+        <p>Chaves de API. <strong>Painel de consumo do mês</strong>: quantas chamadas Google Places / Geocoding / Details já foram feitas, com barra de progresso contra a cota gratuita e o teto que você definiu. Teto de gasto com IA. Validade do cache. Pesos do score (pra calibrar depois de ver leads reais).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="pastas">
+  <div class="wrap">
+    <h2><span class="num">05</span> Estrutura de pastas</h2>
+    <p class="sub">Um único projeto (painel + worker juntos), organizado por assunto.</p>
+
+    <pre>prospekta/
+├─ <b>app/</b>                      páginas e rotas de API do Next.js
+│  ├─ page.tsx                 painel (lista de pesquisas)
+│  ├─ pesquisa/nova/page.tsx
+│  ├─ pesquisa/[id]/page.tsx
+│  ├─ lead/[id]/page.tsx
+│  ├─ config/page.tsx
+│  └─ api/
+│     ├─ pesquisas/route.ts    cria pesquisa, enfileira descoberta
+│     └─ leads/[id]/route.ts
+├─ <b>components/</b>               botões, tabela, boletim, gráfico de score
+├─ <b>lib/</b>                      lógica compartilhada (sem UI)
+│  ├─ supabase/                cliente + tipos das tabelas
+│  ├─ sources/                 fontes de dados plugáveis
+│  │  ├─ types.ts              a interface comum (descobrir / detalhar)
+│  │  └─ google-places.ts      única implementação por enquanto
+│  ├─ budget/                  o "porteiro": limites por pesquisa e por mês
+│  ├─ cache/                   places_cache, region_cache, validade (TTL)
+│  ├─ usage/                   registro de consumo + custo estimado
+│  ├─ discovery/               orquestra fonte + dedup + gravação
+│  ├─ contacts/                resolver de site e redes (fallback)
+│  ├─ site-analysis/           https.ts, tags.ts, whatsapp.ts, perf.ts
+│  ├─ ads-detection/           meta-ad-library.ts, onsite-signals.ts
+│  ├─ social/
+│  ├─ scoring/                 formula.ts, pesos.ts
+│  └─ ai/                      chamadas + textos dos prompts
+├─ <b>worker/</b>
+│  ├─ index.ts                 laço que olha a fila de tarefas
+│  └─ jobs/                    um arquivo por etapa do pipeline
+├─ <b>supabase/</b>
+│  └─ migrations/              o SQL que cria as tabelas
+├─ <b>scripts/</b>                  utilitários avulsos (testar 1 site, etc.)
+├─ .env.local                  chaves e segredos (nunca vai pro Git)
+├─ package.json
+└─ README.md</pre>
+
+    <p>A regra: se é <strong>tela</strong>, vai em <code>app/</code>. Se é <strong>lógica</strong> (baixar site, calcular score), vai em <code>lib/</code> e pode ser usada tanto pelo painel quanto pelo worker. O worker é só a &ldquo;casca&rdquo; que chama a lógica de <code>lib/</code> em ordem.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="banco">
+  <div class="wrap">
+    <h2><span class="num">06</span> Estrutura do banco de dados</h2>
+    <p class="sub">Uma tabela por &ldquo;coisa&rdquo;. Três tabelas novas na v1 servem só pra não gastar chamada à toa: <code>region_cache</code>, <code>places_cache</code> e <code>api_usage</code>.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tabela</th><th>Guarda</th><th>Campos principais</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">searches</td><td>Uma pesquisa que você criou</td><td>id, criada_em, regiao_texto, centro_lat, centro_lng, raio_km, nicho, filtros (json), <b>limite_leads</b>, <b>orcamento_chamadas</b>, <b>chamadas_feitas</b>, <b>custo_estimado_usd</b>, status</td></tr>
+          <tr><td class="mono">region_cache</td><td class="pill g" style="display:inline-block">nova</td><td>regiao_texto (única), centro_lat, centro_lng, resolvido_em — evita geocodificar a mesma cidade duas vezes</td></tr>
+          <tr><td class="mono">places_cache</td><td class="pill g" style="display:inline-block">nova</td><td>google_place_id (<b>único</b>), resultado_busca (json), detalhes (json, pode ser nulo), busca_em, detalhes_em — a fonte da verdade pra &ldquo;já temos isso?&rdquo;</td></tr>
+          <tr><td class="mono">leads</td><td>Uma empresa encontrada</td><td>id, <b>google_place_id</b> (único, pode ser nulo), <b>fonte</b> (&lsquo;google_places&rsquo;), <b>fonte_ref</b>, nome, categoria, endereco, lat, lng, telefone, site_url, instagram_url, facebook_url, avaliacao, qtd_avaliacoes, <b>status_negocio</b> (aberto / fechado), bruto (json)</td></tr>
+          <tr><td class="mono">search_leads</td><td class="pill g" style="display:inline-block">nova</td><td>search_id, lead_id — um mesmo estabelecimento pode aparecer em várias pesquisas sem duplicar o lead</td></tr>
+          <tr><td class="mono">api_usage</td><td class="pill g" style="display:inline-block">nova</td><td>id, em, provedor (&lsquo;google&rsquo;/&lsquo;ia&rsquo;), endpoint (&lsquo;text_search&rsquo;/&lsquo;details&rsquo;/&lsquo;geocoding&rsquo;), faixa_campos, search_id, unidades, custo_estimado_usd — some por mês pro painel</td></tr>
+          <tr><td class="mono">site_analyses</td><td>O resultado da análise técnica de um site</td><td>id, lead_id, verificado_em, site_existe, url_final, https, status_http, tem_viewport, nota_mobile, nota_desempenho, peso_kb, tem_whatsapp, tem_telefone, tem_formulario, tem_cta, tem_pagina_contato, tem_meta_pixel, tem_ga, tem_gtm, tem_google_ads, stack (json), erro</td></tr>
+          <tr><td class="mono">ad_signals</td><td>Indícios de tráfego pago</td><td>id, lead_id, verificado_em, meta_ads_encontrado (sim/não/desconhecido), meta_ads_qtd, google_ads_no_site, sinais (json), veredito (&lsquo;forte&rsquo;/&lsquo;alguns&rsquo;/&lsquo;nenhum&rsquo;), confianca (&lsquo;alta&rsquo;/&lsquo;media&rsquo;/&lsquo;baixa&rsquo;), evidencias (json)</td></tr>
+          <tr><td class="mono">social_analyses</td><td>Presença numa rede social</td><td>id, lead_id, plataforma, perfil_existe, seguidores, ultimo_post_em, tem_bio, tem_link, objetivo (json), avaliacao_ia (json, pode ser nulo)</td></tr>
+          <tr><td class="mono">scores</td><td>O Score de Oportunidade calculado</td><td>id, lead_id, calculado_em, total, detalhamento (json: nota e peso de cada fator), versao_formula</td></tr>
+          <tr><td class="mono">ai_diagnoses</td><td>O resumo comercial da IA</td><td>id, lead_id, modelo, versao_prompt, resumo, problemas (json), angulo_de_entrada, criado_em, tokens, custo_usd</td></tr>
+          <tr><td class="mono">jobs</td><td>A fila de tarefas do worker</td><td>id, tipo, alvo_id, status (&lsquo;pendente&rsquo;/&lsquo;rodando&rsquo;/&lsquo;feito&rsquo;/&lsquo;erro&rsquo;), tentativas, ultimo_erro, agendado_para, atualizado_em</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Por que <code>json</code> em alguns campos?</strong> A resposta crua da Google e a lista de sinais ficam num campo flexível. O que você vai filtrar e ordenar (score, tem_site, avaliação) fica em coluna própria, que é rápida.</p>
+    <p><strong>Como a deduplicação funciona na prática:</strong> antes de gravar um lead novo, o worker faz <code>upsert</code> em <code>places_cache</code> pelo <code>google_place_id</code>. Se a linha já existe e a data <code>busca_em</code> está dentro da validade (ex.: 60 dias), ele reaproveita — <strong>nenhuma chamada nova</strong> — e só cria o vínculo em <code>search_leads</code>. Antes de qualquer <em>Place Details</em>, checa <code>detalhes_em</code> do mesmo jeito.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="n8n">
+  <div class="wrap">
+    <h2><span class="num">07</span> O papel do n8n</h2>
+    <p class="sub">O que é, o que ele faria, e por que ele fica pra depois.</p>
+
+    <p>O <strong>n8n</strong> é uma ferramenta de automação visual: você monta fluxos arrastando &ldquo;nós&rdquo; (buscar dados → transformar → salvar no banco → chamar API) numa tela, sem escrever muito código. É ótimo pra conectar sistemas.</p>
+
+    <h3>O que ele faria no Prospekta</h3>
+    <p>Exatamente a orquestração do pipeline: receber a pesquisa do painel, disparar a descoberta, chamar cada etapa de enriquecimento, gravar no Supabase. É o mesmo trabalho do <em>worker</em>.</p>
+
+    <div class="callout">
+      <strong class="tag">O ponto de decisão</strong>
+      No MVP, n8n e worker resolvem o <strong>mesmo problema</strong>. Ter os dois é ter dois sistemas pra aprender, instalar (n8n exige Docker) e depurar. Para alguém começando e sozinho, isso mais que dobra a dificuldade sem entregar valor proporcional.
+    </div>
+
+    <h3>Recomendação prática</h3>
+    <ul>
+      <li><strong>MVP:</strong> orquestração em TypeScript no worker. Você vê cada passo no código, depura num lugar só, e aprende os fundamentos.</li>
+      <li><strong>Depois</strong> (quando o pipeline estiver estável e você quiser um painel visual pra ligar/desligar etapas, agendar reprocessamentos, ou plugar integrações prontas): sobe o n8n self-hosted via Docker e move a orquestração pra lá aos poucos. As funções de <code>lib/</code> continuam as mesmas — o n8n só passa a ser quem as chama, via um endpoint HTTP no seu próprio app.</li>
+    </ul>
+    <p>Ou seja: o projeto <em>nasce pronto</em> pra receber n8n, mas não paga o custo dele agora.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="places">
+  <div class="wrap">
+    <h2><span class="num">08</span> Google Places API: estratégia e cota gratuita</h2>
+    <p class="sub">A resposta às 10 perguntas — como usar sem sair do R$ 0.</p>
+
+    <h3>1 &amp; 2 — Text Search, Nearby Search ou os dois?</h3>
+    <p>Existem duas formas de descobrir empresas na Places API:</p>
+    <ul>
+      <li><strong>Text Search</strong> — você manda uma frase (&ldquo;advocacia em Iguape SP&rdquo;) e ela entende. Aceita qualquer nicho em texto livre, e resolve o nome da cidade sozinha.</li>
+      <li><strong>Nearby Search</strong> — você manda um ponto + raio + um <em>tipo</em> da lista fixa da Google (&ldquo;dentist&rdquo;, &ldquo;gym&rdquo;, &ldquo;restaurant&rdquo;…). Não aceita texto livre, e muitos nichos brasileiros (&ldquo;lanchonete&rdquo;, &ldquo;delivery&rdquo;, &ldquo;marmitaria&rdquo;) não têm um tipo exato.</li>
+    </ul>
+    <div class="callout rec">
+      <strong class="tag">Recomendação</strong>
+      <strong>Text Search como motor único do MVP.</strong> Funciona pra qualquer nicho, resolve a região sem chamada extra, e aceita o raio como restrição. Para &ldquo;dentistas em Iguape SP&rdquo; ela é claramente melhor: uma frase, uma chamada, 20 resultados. Nearby Search fica documentado como &ldquo;segunda passada&rdquo; futura — útil só quando o nicho casa com um tipo da Google e você quer pescar o que a Text Search deixou de fora.
+    </div>
+
+    <h3>3 — Como o raio entra</h3>
+    <ol>
+      <li>Você digita a região em texto. O worker resolve pra coordenadas (1 chamada de Geocoding, <strong>guardada em cache</strong> — a mesma cidade nunca é resolvida duas vezes).</li>
+      <li>Monta um círculo: centro + raio em metros (máximo da Google: 50.000 m).</li>
+      <li>Passa esse círculo como <code>locationRestriction</code> na Text Search — resultado fora do círculo é <strong>excluído</strong> (não só &ldquo;rebaixado&rdquo;). Isso deixa o custo previsível: menos resultado irrelevante = menos enriquecimento à toa.</li>
+    </ol>
+
+    <h3>4 — Campos na primeira chamada (a mais importante)</h3>
+    <p>Na Places API nova, <strong>você escolhe quais campos quer, e o preço da chamada sobe conforme os campos</strong>. A chave do custo mínimo é pedir só o necessário. Na descoberta, peça:</p>
+    <pre><b>id</b>                 ← o Place ID (essencial pra deduplicar)
+<b>displayName</b>        ← nome
+<b>formattedAddress</b>   ← endereço
+<b>location</b>           ← latitude / longitude
+<b>types / primaryType</b>← categoria
+<b>businessStatus</b>     ← aberto? fechado definitivamente? (descarta lead morto cedo)
+<b>rating</b>             ← nota
+<b>userRatingCount</b>    ← nº de avaliações
+<b>websiteUri</b>         ← site
+<b>nationalPhoneNumber</b>← telefone</pre>
+    <p>Parece muita coisa, mas é <strong>uma chamada só para os 20 leads</strong>, e já entrega tudo que o score baseado em regras precisa. Muito mais barato que economizar campos aqui e depois fazer 20 chamadas de <em>Place Details</em>.</p>
+
+    <h3>5 — Campos que ficam para depois (Place Details, sob demanda)</h3>
+    <p>Só quando você <strong>prioriza</strong> um lead ou abre a tela dele, 1 chamada de <em>Place Details</em> busca o que a busca não traz ou o que é caro:</p>
+    <ul>
+      <li><code>reviews</code> — os textos das avaliações (a faixa mais cara da API; no máximo 5)</li>
+      <li><code>regularOpeningHours</code> — horário completo</li>
+      <li><code>internationalPhoneNumber</code>, <code>googleMapsUri</code> e afins</li>
+    </ul>
+    <p>Resultado guardado em <code>places_cache.detalhes</code> com data — nunca se chama Details duas vezes pro mesmo Place ID dentro da validade.</p>
+
+    <h3>6 — Como reduzir o número de chamadas</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Técnica</th><th>Efeito</th></tr></thead>
+        <tbody>
+          <tr><td>Text Search com <code>locationRestriction</code> (círculo), não <code>locationBias</code></td><td>Menos resultado irrelevante entrando no pipeline</td></tr>
+          <tr><td>Limite de leads por pesquisa (padrão 20)</td><td>A Text Search devolve 20 por página. 20 = 1 chamada. 60 = 3 chamadas. Só pagina se você pedir &ldquo;mais resultados&rdquo;</td></tr>
+          <tr><td>Cache de Geocoding por região</td><td>&ldquo;Iguape SP&rdquo; resolvido uma vez, reusado pra sempre</td></tr>
+          <tr><td>Cache de Places por Place ID (TTL ~60 dias)</td><td>Pesquisas que se sobrepõem (mesma cidade, mesmo nicho) reaproveitam leads — 0 chamada</td></tr>
+          <tr><td>Deduplicação por Place ID antes de qualquer Details</td><td>Nunca detalha o mesmo estabelecimento duas vezes</td></tr>
+          <tr><td>Details só em lead priorizado</td><td>Se você prioriza 5 de 20, são 5 chamadas, não 20</td></tr>
+          <tr><td>Sem Autocomplete no MVP (campo de texto simples + 1 busca)</td><td>Elimina uma cobrança inteira. Se um dia usar, com <em>session token</em></td></tr>
+          <tr><td>Sem Place Photos</td><td>Foto é cobrada por download e não é necessária</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>7 — Place ID contra duplicatas</h3>
+    <p>O <strong>Place ID</strong> é o identificador único de um lugar na Google. Ele é a coluna <code>google_place_id</code> (única) em <code>places_cache</code> e <code>leads</code>. Fluxo: antes de gravar, <code>upsert</code> por Place ID — se já existe, atualiza &ldquo;visto por último&rdquo;, vincula à nova pesquisa em <code>search_leads</code>, e <strong>não cria lead duplicado nem faz chamada nova</strong>. Como reforço, uma deduplicação &ldquo;fraca&rdquo; por nome + endereço aproximado pega o caso raro do mesmo negócio com dois Place IDs (ou vindo de outra fonte no futuro).</p>
+
+    <h3>8 — Onde há cobrança potencial</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Chamada</th><th>Cobrança</th><th>No Prospekta</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Text Search</td><td class="cost">por requisição, faixa pelos campos</td><td>1 por pesquisa (às vezes 2–3 se paginar)</td></tr>
+          <tr><td class="mono">Place Details</td><td class="cost">por requisição, faixa pelos campos</td><td>Só em lead priorizado; com cache</td></tr>
+          <tr><td class="mono">Geocoding</td><td class="cost">por requisição</td><td>1 por região nova; depois cache</td></tr>
+          <tr><td class="mono">Nearby Search</td><td class="cost">por requisição</td><td>Não usado no MVP</td></tr>
+          <tr><td class="mono">Autocomplete</td><td class="cost">por caractere / sessão</td><td>Não usado no MVP</td></tr>
+          <tr><td class="mono">Place Photos</td><td class="cost">por foto</td><td>Não usado</td></tr>
+          <tr><td>PageSpeed, análise de site, IA</td><td class="free">não é Google Places</td><td>Código próprio / APIs à parte</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>9 — Como ficar dentro da cota gratuita</h3>
+    <p>A Places API nova (modelo de 2025) dá uma <strong>cota mensal gratuita para cada tipo de chamada</strong> — na casa dos milhares de chamadas/mês por SKU. <em>Confirme os números atuais no painel do Google Cloud, porque a Google mexe nisso.</em> O plano pra nunca passar:</p>
+    <ul>
+      <li>Uma pesquisa típica = <strong>1 a 5 chamadas</strong>. Mesmo 100 pesquisas/mês × 5 = 500 chamadas, bem abaixo da cota.</li>
+      <li>Toda chamada é registrada em <code>api_usage</code> com custo estimado; o painel <code>/config</code> soma por mês e mostra a barra contra o limite.</li>
+      <li>Teto interno configurável (ex.: &ldquo;parar de chamar Places depois de 3.000 no mês&rdquo;) que o worker respeita <em>antes</em> de encostar no limite da Google.</li>
+      <li>Cache agressivo (Place ID + região).</li>
+      <li>Nada de Photos; nada de Autocomplete; Text Search em vez de Details-por-lead.</li>
+    </ul>
+
+    <h3>10 — Configurar quotas pra não tomar susto</h3>
+    <ol>
+      <li><strong>Projeto separado no Google Cloud</strong> só pro Prospekta — isola faturamento e limites.</li>
+      <li><strong>Billing → Orçamentos e alertas</strong>: orçamento de US$ 1 (ou 5) com e-mail em 50/90/100%. Alerta — não bloqueia.</li>
+      <li><strong>APIs e Serviços → [cada API] → Cotas</strong>: limite <em>rígido</em> de requisições por dia (ex.: Text Search 100/dia). Isso <strong>bloqueia de verdade</strong> — a chamada falha em vez de cobrar. É a rede de segurança real.</li>
+      <li><strong>Restringir a chave de API</strong>: só as APIs que você usa, e por IP. Chave vazada não vira conta alta.</li>
+      <li><strong>Teto no próprio app</strong> (o <code>api_usage</code>) como primeira barreira, antes mesmo da Google.</li>
+    </ol>
+
+    <div class="callout">
+      <strong class="tag">As outras fontes continuam</strong>
+      Só a <em>descoberta</em> mudou. Continuam gratuitos e no plano: análise do site por código próprio, <strong>PageSpeed Insights</strong> (desempenho), <strong>Meta Ad Library</strong> (indícios de anúncio), <strong>RDAP</strong> (idade do domínio), e o <strong>site da própria empresa</strong> como fonte de redes sociais e contatos que faltarem.
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="sem-ia">
+  <div class="wrap">
+    <h2><span class="num">09</span> Análises que NÃO precisam de IA</h2>
+    <p class="sub">Tudo isso é código simples: baixar a página, procurar um padrão, marcar sim/não. IA aqui seria desperdício.</p>
+
+    <div class="two-col">
+      <div>
+        <h3>No site</h3>
+        <ul>
+          <li><strong>Existe?</strong> — a URL responde</li>
+          <li><strong>HTTPS</strong> — o endereço é <code>https</code> e o certificado é válido</li>
+          <li><strong>Redireciona</strong> — pra onde vai a raiz do domínio</li>
+          <li><strong>Mobile básico</strong> — tem a tag <code>&lt;meta viewport&gt;</code>? Usa media queries?</li>
+          <li><strong>Desempenho</strong> — nota do PageSpeed; peso da página; tempo até o primeiro byte</li>
+          <li><strong>WhatsApp</strong> — links <code>wa.me</code> / <code>api.whatsapp.com</code></li>
+          <li><strong>Telefone visível</strong> — links <code>tel:</code> ou número no texto</li>
+          <li><strong>Formulário</strong> — existe uma tag <code>&lt;form&gt;</code></li>
+          <li><strong>CTA</strong> — botões com &ldquo;orçamento&rdquo;, &ldquo;agende&rdquo;, &ldquo;fale conosco&rdquo; (lista de termos)</li>
+          <li><strong>Página de contato</strong> — link com &ldquo;contato&rdquo; / &ldquo;fale&rdquo;</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Rastreamento e anúncios (no código da página)</h3>
+        <ul>
+          <li><strong>Meta Pixel</strong> — <code>connect.facebook.net</code>, <code>fbevents.js</code>, <code>fbq(</code></li>
+          <li><strong>Google Analytics / GTM</strong> — <code>googletagmanager.com</code>, <code>gtag(</code>, IDs <code>G-</code> ou <code>UA-</code></li>
+          <li><strong>Google Ads</strong> — <code>googleadservices.com</code>, ID de conversão <code>AW-</code></li>
+          <li><strong>Remarketing/DoubleClick</strong> — <code>doubleclick.net</code></li>
+        </ul>
+        <h3>Dados da empresa / redes</h3>
+        <ul>
+          <li>Nome, categoria, endereço, coordenadas, telefone, nota, nº de avaliações — vêm prontos da Google Places</li>
+          <li>Perfil de rede social <strong>existe</strong> (a URL abre)</li>
+          <li>Tem <strong>bio</strong>, tem <strong>link</strong> na bio</li>
+          <li><strong>Data do último post</strong> e frequência (quando a página pública deixa ler)</li>
+          <li>Idade do domínio (RDAP)</li>
+        </ul>
+      </div>
+    </div>
+    <p>Ferramentas que ajudam aqui: <code>fetch</code> (baixar), <code>cheerio</code> (procurar coisas no HTML), a API do PageSpeed. Nada disso é IA.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="com-ia">
+  <div class="wrap">
+    <h2><span class="num">10</span> Análises que REALMENTE precisam de IA</h2>
+    <p class="sub">Onde a resposta é interpretação, julgamento ou texto — não um sim/não.</p>
+
+    <ul>
+      <li><strong>Diagnóstico comercial do lead</strong> — ler todos os sinais e dizer, em linguagem de vendedor: &ldquo;empresa movimentada, mas o site não converte: sem WhatsApp, sem formulário, lento no celular. Ângulo de entrada: oferecer uma landing page de captação.&rdquo;</li>
+      <li><strong>Qualidade das peças de rede social</strong> — só um modelo com visão, olhando <em>prints</em> dos posts, consegue opinar sobre identidade visual, consistência e capricho.</li>
+      <li><strong>Clareza da bio e do CTA</strong> — &ldquo;a bio diz o que a empresa faz e como agir?&rdquo; é julgamento de linguagem.</li>
+      <li><strong>Resumo executivo</strong> — juntar site + anúncios + redes + score numa recomendação curta e priorizada.</li>
+      <li><strong>Abordagem personalizada</strong> (fase futura) — escrever a primeira mensagem.</li>
+      <li><strong>Classificar categoria ambígua</strong> (opcional) — quando a tag do OSM é vaga (&ldquo;loja&rdquo;) e o nome sugere o nicho.</li>
+    </ul>
+
+    <div class="callout rec">
+      <strong class="tag">Regra de ouro do custo</strong>
+      A IA só roda depois do score, e só nos leads do topo (ex.: os 20% melhores, ou os que passaram de 60 pontos). Modelo barato (Gemini Flash, GPT-4o-mini ou Claude Haiku). Com esse recorte, analisar uma pesquisa inteira custa <strong>centavos de dólar</strong>. Guarde o custo de cada chamada na tabela <code>ai_diagnoses</code> pra acompanhar.
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="score">
+  <div class="wrap">
+    <h2><span class="num">11</span> Como construir o Score de Oportunidade</h2>
+    <p class="sub">Um número de 0 a 100 que responde &ldquo;quanto vale a pena eu abordar esta empresa?&rdquo; — não &ldquo;quão bom é o marketing dela?&rdquo;.</p>
+
+    <p>A ideia central que você trouxe está certa: <strong>oportunidade = tem negócio de verdade × tem problema que eu resolvo × dá pra falar com ela</strong>. Uma empresa movimentada com site ruim vale mais que uma empresa fantasma com Instagram bonito.</p>
+
+    <h3>Cinco fatores, com pesos</h3>
+    <div class="score-model">
+      <div class="score-row">
+        <div class="label"><b>Negócio ativo / capacidade</b><span class="wt">peso 25</span></div>
+        <div class="bar"><i style="width:25%"></i></div>
+        <div class="note">Tem telefone, endereço, horário, algum site. Sinais de que é um negócio vivo. Pontuação baixa aqui <em>derruba</em> o lead — não adianta ter problema se não tem quem resolver.</div>
+      </div>
+      <div class="score-row">
+        <div class="label"><b>Atividade / reputação</b><span class="wt">peso 20</span></div>
+        <div class="bar"><i style="width:20%"></i></div>
+        <div class="note">Volume de avaliações (em escala logarítmica) e nota média — agora disponíveis pela Google Places. Mostra que tem clientes e se importa.</div>
+      </div>
+      <div class="score-row">
+        <div class="label"><b>Problemas que você resolve</b><span class="wt">peso 35</span></div>
+        <div class="bar"><i style="width:35%"></i></div>
+        <div class="note">O coração do score. Ponto para cada falha vendável: sem site, sem HTTPS, não é mobile, lento, sem WhatsApp, sem formulário/CTA, sem Pixel (não remarketa), sem Analytics (está no escuro), rede social fraca, sem indício de tráfego pago. Cada item = uma oferta sua.</div>
+      </div>
+      <div class="score-row">
+        <div class="label"><b>Facilidade de contato</b><span class="wt">peso 10</span></div>
+        <div class="bar"><i style="width:10%"></i></div>
+        <div class="note">WhatsApp ou telefone direto disponível; negócio pequeno (o dono atende). Lead ótimo que você não consegue contatar não é lead.</div>
+      </div>
+      <div class="score-row">
+        <div class="label"><b>Sinais de que investe</b><span class="wt">peso 10</span></div>
+        <div class="bar"><i style="width:10%"></i></div>
+        <div class="note">Já gasta com <em>algo</em>: tem site pago, já rodou anúncio, usa ferramenta paga. Quem já investe, volta a investir.</div>
+      </div>
+    </div>
+
+    <h3>Regras que evitam distorção</h3>
+    <ul>
+      <li><strong>&ldquo;Problemas&rdquo; só contam se &ldquo;Negócio ativo&rdquo; for razoável.</strong> Site inexistente numa empresa fantasma não é oportunidade — é lixo. Multiplique o fator 3 por um coeficiente do fator 1.</li>
+      <li><strong>Teto por fator.</strong> Um único problema catastrófico não leva o score a 100; a soma de vários problemas médios, sim.</li>
+      <li><strong>&ldquo;Sem marketing nenhum&rdquo; é ambíguo.</strong> Pode ser ouro (ninguém explorou) ou deserto (sem verba, sem interesse). Os fatores 1 e 5 desempatam.</li>
+      <li><strong>Score determinístico.</strong> É uma fórmula em código, testável e explicável. <em>Nada de IA no número.</em> A IA só escreve o texto ao lado.</li>
+      <li><strong>Transparência total.</strong> Guarde a contribuição de cada fator e mostre na tela do lead: &ldquo;68 = 18 (ativo) + 8 (reputação) + 30 (problemas) + 8 (contato) + 4 (investe)&rdquo;.</li>
+      <li><strong>Versão da fórmula.</strong> Salve <code>versao_formula</code> em cada score. Quando ajustar os pesos, você sabe o que foi calculado com qual regra.</li>
+    </ul>
+
+    <p><strong>Como calibrar:</strong> rode numa cidade/nicho que você conhece, olhe os 20 primeiros e os 20 últimos. Se algum lead &ldquo;obviamente bom&rdquo; ficou embaixo, ajuste o peso e rode de novo. É iterativo.</p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="tecnologias">
+  <div class="wrap">
+    <h2><span class="num">12</span> Tecnologias, parte por parte</h2>
+    <p class="sub">Para cada uma: pra que serve · instala programa? · usa no VS Code? · site externo? · custo · alternativa grátis.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h4>VS Code</h4>
+        <p>O editor onde você escreve o código do projeto.</p>
+        <div class="facts"><span class="pill">instala programa: sim</span><span class="pill">é o próprio VS Code</span><span class="pill">baixa de site oficial 1x</span><span class="pill free">grátis</span><span class="pill">alt: Cursor, WebStorm (pago)</span></div>
+      </div>
+      <div class="card">
+        <h4>Node.js</h4>
+        <p>Faz o JavaScript/TypeScript rodar fora do navegador. É o motor do Next.js e do worker.</p>
+        <div class="facts"><span class="pill">instala programa: sim</span><span class="pill">roda no terminal do VS Code</span><span class="pill">baixa de nodejs.org</span><span class="pill free">grátis</span><span class="pill">alt: Bun (grátis)</span></div>
+      </div>
+      <div class="card">
+        <h4>Git + GitHub</h4>
+        <p>Git guarda o histórico do código na sua máquina; GitHub é a cópia online (backup + futuro deploy).</p>
+        <div class="facts"><span class="pill">instala programa: sim (Git)</span><span class="pill">VS Code tem painel de Git</span><span class="pill">GitHub é site externo</span><span class="pill free">grátis</span><span class="pill">alt: GitLab (grátis)</span></div>
+      </div>
+      <div class="card">
+        <h4>Next.js</h4>
+        <p>O framework do painel: monta as páginas, as rotas de API e serve tudo no navegador.</p>
+        <div class="facts"><span class="pill">instala programa: não (vem via npm)</span><span class="pill">é o seu código, no VS Code</span><span class="pill">não é site externo</span><span class="pill free">grátis (open source)</span><span class="pill">alt: Remix, Vite + React</span></div>
+      </div>
+      <div class="card">
+        <h4>TypeScript</h4>
+        <p>JavaScript com &ldquo;tipos&rdquo;: avisa erros enquanto você digita, antes de rodar. Ajuda muito quem está começando.</p>
+        <div class="facts"><span class="pill">instala programa: não (via npm)</span><span class="pill">VS Code já entende nativamente</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: JavaScript puro (não recomendado)</span></div>
+      </div>
+      <div class="card">
+        <h4>Tailwind CSS</h4>
+        <p>Deixa você estilizar as telas escrevendo classes curtas, sem manter arquivos grandes de CSS.</p>
+        <div class="facts"><span class="pill">instala programa: não (via npm)</span><span class="pill">no seu código, no VS Code</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: CSS puro, CSS Modules</span></div>
+      </div>
+      <div class="card">
+        <h4>Supabase</h4>
+        <p>Banco de dados PostgreSQL hospedado, com painel visual e login pronto. É onde o Prospekta guarda tudo.</p>
+        <div class="facts"><span class="pill">instala programa: não (usa no navegador)</span><span class="pill">o código conecta pelo VS Code</span><span class="pill">site externo (cria conta)</span><span class="pill w">grátis até o limite · US$ 25/mês se crescer</span><span class="pill">alt: Neon, Postgres local no Docker</span></div>
+      </div>
+      <div class="card">
+        <h4>Supabase CLI</h4>
+        <p>Um programinha pra aplicar as &ldquo;migrations&rdquo; (o SQL que cria/atualiza as tabelas) a partir do seu projeto.</p>
+        <div class="facts"><span class="pill">instala programa: sim (pequeno)</span><span class="pill">roda no terminal do VS Code</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: escrever SQL na mão no painel do Supabase</span></div>
+      </div>
+      <div class="card">
+        <h4>Google Places API (nova)</h4>
+        <p>Fonte principal de descoberta: lista empresas por &ldquo;nicho + região&rdquo;, com telefone, site, nota e nº de avaliações. Também traz detalhes de um lugar (Place Details) sob demanda.</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">chamado pelo seu código</span><span class="pill">serviço externo (conta Google Cloud + chave)</span><span class="pill w">cota mensal grátis (milhares de chamadas/SKU) · acima disso, paga</span><span class="pill">alt: OSM (grátis, cobertura fraca aqui); dados de CNPJ da Receita (grátis, sem site/avaliações)</span></div>
+      </div>
+      <div class="card">
+        <h4>Google Geocoding API</h4>
+        <p>Converte &ldquo;Iguape SP&rdquo; em latitude/longitude pra marcar o centro do raio. Chamada uma vez por região e guardada em cache.</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">chamado pelo seu código</span><span class="pill">serviço externo (mesma chave do Places)</span><span class="pill w">cota mensal grátis · cache elimina repetição</span><span class="pill">alt: Nominatim/OSM (grátis, 1 req/s); a própria Text Search resolve a região</span></div>
+      </div>
+      <div class="card">
+        <h4>Cheerio</h4>
+        <p>Biblioteca que lê o HTML de um site e deixa você procurar coisas (&ldquo;tem link de WhatsApp?&rdquo;, &ldquo;tem formulário?&rdquo;).</p>
+        <div class="facts"><span class="pill">instala programa: não (via npm)</span><span class="pill">no seu código, no VS Code</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: node-html-parser, linkedom</span></div>
+      </div>
+      <div class="card">
+        <h4>Playwright <span style="font-weight:400;color:var(--slate-soft)">(talvez, mais pra frente)</span></h4>
+        <p>Controla um navegador de verdade pra abrir sites que só aparecem depois de rodar JavaScript (e algumas páginas de rede social).</p>
+        <div class="facts"><span class="pill">instala programa: baixa navegadores (~pesado)</span><span class="pill">no seu código, no VS Code</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: Puppeteer; ou não usar (mais leve)</span></div>
+      </div>
+      <div class="card">
+        <h4>Google PageSpeed Insights API</h4>
+        <p>Você manda uma URL, ela devolve a nota de desempenho e de mobile (relatório Lighthouse).</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">chamado pelo seu código</span><span class="pill">serviço externo (precisa de chave grátis)</span><span class="pill free">grátis (cota ~25 mil/dia)</span><span class="pill">alt: rodar o Lighthouse localmente (grátis, mais lento)</span></div>
+      </div>
+      <div class="card">
+        <h4>Meta Ad Library</h4>
+        <p>Mostra os anúncios ativos de uma página do Facebook/Instagram — evidência de tráfego pago.</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">site + API (conta de desenvolvedor grátis)</span><span class="pill">serviço externo</span><span class="pill free">grátis</span><span class="pill">alt: checagem manual no navegador</span></div>
+      </div>
+      <div class="card">
+        <h4>API de IA (Gemini / OpenAI / Anthropic)</h4>
+        <p>Gera os diagnósticos e resumos comerciais dos leads do topo.</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">chamado pelo seu código</span><span class="pill">serviço externo (conta + cartão)</span><span class="pill w">paga por uso — centavos/mês com o funil</span><span class="pill">alt: Ollama + modelo local (grátis, exige PC bom)</span></div>
+      </div>
+      <div class="card">
+        <h4>Ollama <span style="font-weight:400;color:var(--slate-soft)">(opcional)</span></h4>
+        <p>Roda modelos de IA na sua própria máquina, de graça. Mais lento e um pouco menos preciso.</p>
+        <div class="facts"><span class="pill">instala programa: sim</span><span class="pill">chamado pelo seu código</span><span class="pill">não é site externo</span><span class="pill free">grátis</span><span class="pill">alt: as APIs pagas</span></div>
+      </div>
+      <div class="card">
+        <h4>n8n <span style="font-weight:400;color:var(--slate-soft)">(fase 2)</span></h4>
+        <p>Automação visual pra orquestrar o pipeline sem código. No MVP, o worker faz esse papel.</p>
+        <div class="facts"><span class="pill">instala programa: sim (via Docker)</span><span class="pill">app no navegador, não no VS Code</span><span class="pill">roda local</span><span class="pill free">grátis (self-hosted) · n8n Cloud é pago</span><span class="pill">alt: orquestração em TypeScript (recomendado agora)</span></div>
+      </div>
+      <div class="card">
+        <h4>Docker Desktop <span style="font-weight:400;color:var(--slate-soft)">(só se usar n8n)</span></h4>
+        <p>Roda programas &ldquo;empacotados&rdquo; (como o n8n) de forma isolada na sua máquina.</p>
+        <div class="facts"><span class="pill">instala programa: sim</span><span class="pill">tem extensão no VS Code, mas roda à parte</span><span class="pill">não é site externo</span><span class="pill free">grátis (uso pessoal)</span><span class="pill">alt: não self-hospedar nada</span></div>
+      </div>
+      <div class="card">
+        <h4>Vercel <span style="font-weight:400;color:var(--slate-soft)">(futuro)</span></h4>
+        <p>Coloca o painel no ar num endereço público, conectado ao GitHub.</p>
+        <div class="facts"><span class="pill">instala programa: não</span><span class="pill">conecta no GitHub</span><span class="pill">site externo</span><span class="pill free">camada Hobby grátis · Pro US$ 20/mês</span><span class="pill">alt: Netlify, Cloudflare Pages (grátis); ou só localhost</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section id="custos">
+  <div class="wrap">
+    <h2><span class="num">13</span> Custos potenciais e como evitá-los</h2>
+    <p class="sub">Onde o dinheiro <em>pode</em> vazar, e o freio pra cada caso.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Custo se descuidar</th><th>Como manter em R$ 0</th></tr></thead>
+        <tbody>
+          <tr><td>Hospedagem do painel</td><td class="cost">US$ 20/mês (Vercel Pro)</td><td>Rodar em <code>localhost</code>; se publicar, ficar na camada grátis</td></tr>
+          <tr><td>Banco de dados</td><td class="cost">US$ 25/mês (Supabase Pro)</td><td>Free dá conta (500 MB). Ele pausa após ~1 semana sem uso — basta logar</td></tr>
+          <tr><td>API de IA</td><td class="cost">alguns dólares/mês se rodar em todo lead</td><td>Só nos top 20% + modelo barato + cache + teto de gasto em <code>/config</code></td></tr>
+          <tr><td>Google Places / Geocoding</td><td class="cost">acima da cota grátis, ~US$ 5–35 / 1.000 chamadas conforme os campos</td><td>Cota mensal grátis + cache por Place ID + limite de leads (20 = 1 chamada) + cota rígida diária no Google Cloud + teto interno no <code>api_usage</code></td></tr>
+          <tr><td>Place Details caro (reviews)</td><td class="cost">a faixa mais alta da API</td><td>Só em lead priorizado; peça <code>reviews</code> apenas quando for usar; cache</td></tr>
+          <tr><td>Proxies / anti-bloqueio</td><td class="cost">US$ 10–50/mês</td><td>Volume baixo, pausas educadas entre requisições, não raspar Google/Instagram de forma agressiva</td></tr>
+          <tr><td>PageSpeed além da cota</td><td class="free">US$ 0 (não cobra, só limita)</td><td>Cache do resultado por lead; não reanalisar o mesmo site toda hora</td></tr>
+          <tr><td>Domínio próprio</td><td class="cost">~US$ 12/ano</td><td>Opcional. O subdomínio grátis da Vercel serve</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Custo realista do MVP: R$ 0</strong> — a Google Places cabe na cota gratuita com folga no seu volume, e a IA fica em centavos. O risco de gasto acidental é neutralizado pela cota rígida diária no Google Cloud (item 3 da seção 08): se algo der errado no código, as chamadas param de funcionar em vez de virar conta.</p>
+  </div>
+</section>
+
+<!-- 14 -->
+<section id="riscos">
+  <div class="wrap">
+    <h2><span class="num">14</span> Riscos técnicos</h2>
+    <p class="sub">O que costuma dar errado nesse tipo de projeto — e o plano pra cada um.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h4>Gasto acidental na Google Places</h4>
+        <p>Um laço mal feito no código, ou paginação sem querer, pode disparar centenas de chamadas.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">cota rígida diária no Google Cloud (bloqueia, não cobra)</span><span class="pill">teto interno no api_usage</span><span class="pill">orçamento por pesquisa</span><span class="pill">alerta de billing em US$ 1</span></div>
+      </div>
+      <div class="card">
+        <h4>Mercado pequeno demais na região</h4>
+        <p>Iguape + Ilha Comprida têm poucas dezenas de empresas por nicho. A ferramenta pode &ldquo;esvaziar&rdquo; a região rápido.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">pesquisar nichos e cidades vizinhas (Registro, Cananéia, Pariquera-Açu)</span><span class="pill">reprocessar de tempos em tempos</span></div>
+      </div>
+      <div class="card">
+        <h4>Place ID muda</h4>
+        <p>Raramente, a Google troca o Place ID de um lugar. Uma chamada de Details pode voltar &ldquo;não encontrado&rdquo;.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">tratar NOT_FOUND com calma</span><span class="pill">dedup fraca por nome+endereço como reforço</span></div>
+      </div>
+      <div class="card">
+        <h4>Raspagem quebra sozinha</h4>
+        <p>Instagram, Google Maps e a Ad Library mudam layout e bloqueiam bots. Recursos que dependem disso vão falhar às vezes.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">tratar como &ldquo;melhor esforço&rdquo;</span><span class="pill">nunca travar o pipeline</span><span class="pill">sempre registrar confiança</span></div>
+      </div>
+      <div class="card">
+        <h4>Limites de requisição (429)</h4>
+        <p>PageSpeed e outras APIs recusam se você pedir rápido demais. O enriquecimento fica lento ou falha.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">fila + espera progressiva</span><span class="pill">cache</span><span class="pill">um lead de cada vez no worker</span></div>
+      </div>
+      <div class="card">
+        <h4>Timeout em hospedagem</h4>
+        <p>Rotas de API na Vercel cortam depois de poucos segundos — não servem pra analisar dezenas de sites.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">trabalho pesado só no worker local</span><span class="pill">painel só lê/escreve no banco</span></div>
+      </div>
+      <div class="card">
+        <h4>Afirmação errada sobre anúncios</h4>
+        <p>Dizer &ldquo;não anuncia&rdquo; e estar errado destrói sua credibilidade na conversa de venda.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">só &ldquo;nenhum indício encontrado&rdquo;</span><span class="pill">sempre com nível de confiança</span><span class="pill">texto da UI reforça isso</span></div>
+      </div>
+      <div class="card">
+        <h4>LGPD</h4>
+        <p>Você coleta dados de contato de empresas. B2B com dado público é risco menor, mas existe.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">guardar só o necessário</span><span class="pill">uso próprio, não revender</span><span class="pill">MVP sem disparo automático já ajuda</span></div>
+      </div>
+      <div class="card">
+        <h4>Supabase Free pausa por inatividade</h4>
+        <p>Depois de ~7 dias sem acesso, o projeto hiberna e o painel para.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">logar toda semana</span><span class="pill">ou um ping agendado simples</span></div>
+      </div>
+      <div class="card">
+        <h4>Curva de aprendizado dupla</h4>
+        <p>Cada sistema novo (Docker, n8n) multiplica o tempo de depuração de quem está começando.</p>
+        <div class="facts"><span class="pill w">mitigar</span><span class="pill">MVP sem n8n / sem Docker</span><span class="pill">uma peça nova de cada vez</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section id="limitacoes">
+  <div class="wrap">
+    <h2><span class="num">15</span> Limitações das fontes</h2>
+    <p class="sub">O que a Google Places e as fontes gratuitas <em>não</em> resolvem — pra ajustar a expectativa desde já.</p>
+    <ul>
+      <li><strong>Places só conhece quem está no Google Maps.</strong> Uma empresa que nunca criou ficha no Maps não aparece — e essa é justamente parte do público de baixa presença digital. Você vê os que têm <em>alguma</em> presença.</li>
+      <li><strong>A cota gratuita pode mudar.</strong> A Google reestruturou o modelo em 2025 e pode mexer de novo. Confirme os limites atuais e mantenha as cotas rígidas configuradas.</li>
+      <li><strong>Custo cresce com os campos.</strong> Pedir <code>reviews</code> em massa sai caro. Por isso os textos de avaliação só vêm sob demanda, no lead priorizado.</li>
+      <li><strong>Sem CNPJ nem dados de faturamento.</strong> Places não diz porte da empresa nem situação cadastral — isso viria dos dados abertos da Receita, numa fase futura.</li>
+      <li><strong>Mercado pequeno.</strong> Na sua região, cada nicho tem poucas dezenas de empresas. É limitação do lugar, não da API.</li>
+      <li><strong>PageSpeed API:</strong> tem cota diária, às vezes demora, e só emula mobile.</li>
+      <li><strong>Meta Ad Library API:</strong> acesso completo é restrito; em vários países entrega só anúncios políticos. O site mostra tudo, mas ler de forma automática é frágil.</li>
+      <li><strong>Google Ads Transparency:</strong> sem API. Só manual ou raspagem instável.</li>
+      <li><strong>Redes sociais:</strong> contagem de seguidores, frequência de posts e prints das peças dependem de páginas públicas que mudam e bloqueiam. Trate como bônus, não como base.</li>
+      <li><strong>IA local (Ollama):</strong> grátis, mas exige um PC razoável e entrega qualidade inferior às APIs pagas para diagnóstico comercial.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 16 -->
+<section id="ordem">
+  <div class="wrap">
+    <h2><span class="num">16</span> Ordem ideal de desenvolvimento</h2>
+    <p class="sub">Cada passo entrega algo que funciona e que você entende antes de ir pro próximo.</p>
+
+    <ol class="build">
+      <li><b>Teste de viabilidade</b> <span class="tag2">feito</span><br>OSM devolveu 8 estabelecimentos em Iguape + Ilha Comprida. Conclusão: OSM fora, Google Places como fonte principal.</li>
+      <li><b>Contas e ambiente</b> <span class="tag2">1 dia</span><br>Instalar VS Code, Node, Git. Criar conta no Supabase e no GitHub. Criar o projeto Next.js vazio e subir no GitHub.</li>
+      <li><b>Google Cloud com trava de custo</b> <span class="tag2">antes de qualquer código que chame a Google</span><br>Projeto separado só pro Prospekta. Ativar Places API (nova) + Geocoding + PageSpeed. Criar e <strong>restringir</strong> a chave. Definir <strong>cota rígida diária</strong> por API e <strong>alerta de orçamento</strong> em US$ 1. Testar 1 chamada pelo próprio painel da Google.</li>
+      <li><b>Banco conectado</b><br>Migrations das tabelas da seção 06 (incluindo <code>region_cache</code>, <code>places_cache</code>, <code>api_usage</code>, <code>search_leads</code>), aplicar no Supabase, conectar o Next.js.</li>
+      <li><b>Guardas de custo primeiro</b> <span class="tag2">antes do que gasta dinheiro</span><br>Módulos <code>budget</code>, <code>cache</code> e <code>usage</code>. Testes automatizados: &ldquo;pesquisa com orçamento 1 não faz a 2ª chamada&rdquo;, &ldquo;Place ID repetido não gera chamada&rdquo;.</li>
+      <li><b>Formulário de pesquisa</b><br>Tela <code>/pesquisa/nova</code>: região em texto, raio, nicho, limite de leads. Grava em <code>searches</code> com o orçamento de chamadas.</li>
+      <li><b>Descoberta via Google Places</b> <span class="tag2">primeira vitória visível</span><br>Interface <code>sources</code> + implementação <code>google-places</code> (Text Search, campos mínimos, <code>locationRestriction</code>). Resolve região (com cache), dedup por Place ID, preenche <code>leads</code>. Lista real de advogados de Iguape em <code>/pesquisa/[id]</code>.</li>
+      <li><b>Worker + fila</b><br><code>worker/index.ts</code> olha <code>jobs</code>, executa. Por enquanto só a descoberta passa por ele.</li>
+      <li><b>Análise técnica do site</b> <span class="tag2">o miolo</span><br>Módulo <code>site-analysis</code> completo. Boletim em <code>/lead/[id]</code>. Não custa Google Places.</li>
+      <li><b>Score v1</b><br>Fórmula determinística da seção 11, em todos os leads. Ranking ordenado + detalhamento na tela do lead.</li>
+      <li><b>Enriquecimento profundo (Place Details)</b><br>Módulo <code>enrich</code>: 1 chamada por lead priorizado, via cache + budget. Trechos de avaliação e horário em <code>/lead/[id]</code>.</li>
+      <li><b>Indícios de tráfego pago</b><br>Sinais do próprio site primeiro; depois Meta Ad Library. Sempre veredito + confiança.</li>
+      <li><b>Redes sociais — parte objetiva</b><br>Perfil existe, bio, link, último post. Alimenta o score.</li>
+      <li><b>Diagnóstico com IA (top N)</b><br>Módulo <code>ai-diagnosis</code> nos melhores leads. Registrar custo.</li>
+      <li><b>Acabamento</b><br>Filtros, exportar CSV, <code>/config</code> com painel de consumo + pesos do score, favoritos.</li>
+    </ol>
+    <p style="color:var(--slate-soft);font-size:14px">Depois do MVP: adicionar a fonte de dados abertos de CNPJ (Receita), introduzir o n8n, e a geração de abordagem personalizada.</p>
+  </div>
+</section>
+
+<!-- 17 -->
+<section id="decisoes">
+  <div class="wrap">
+    <h2><span class="num">17</span> Decisões antes de começar</h2>
+    <p class="sub">Responder isto agora evita retrabalho depois. Já vai minha recomendação em cada uma.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Decisão</th><th>Recomendação</th></tr></thead>
+        <tbody>
+          <tr><td class="num-cell">1</td><td><b>Teto mensal de chamadas</b> à Google Places (o limite interno do <code>api_usage</code>)?</td><td>Começar em <b>2.000/mês</b>. Está muito abaixo da cota grátis e cobre dezenas de pesquisas. Ajustar em <code>/config</code>.</td></tr>
+          <tr><td class="num-cell">2</td><td><b>Validade do cache</b> (TTL) pra busca e pra detalhes?</td><td>Busca: <b>60 dias</b>. Detalhes: <b>30 dias</b>. Avaliações mudam devagar nesse tipo de negócio.</td></tr>
+          <tr><td class="num-cell">3</td><td><b>Limite de leads por pesquisa</b> (padrão)?</td><td><b>20</b> (= 1 chamada). Você libera &ldquo;buscar mais&rdquo; manualmente quando quiser as próximas 20.</td></tr>
+          <tr><td class="num-cell">4</td><td><b>Projeto separado</b> no Google Cloud?</td><td><b>Sim.</b> Isola faturamento, cotas e a chave. Facilita desligar tudo se precisar.</td></tr>
+          <tr><td class="num-cell">5</td><td><b>n8n agora ou depois?</b></td><td><b>Depois.</b> Pipeline em TypeScript primeiro; n8n quando estiver estável.</td></tr>
+          <tr><td class="num-cell">6</td><td><b>Qual IA</b> pro diagnóstico e qual teto de gasto mensal?</td><td>Gemini Flash, GPT-4o-mini ou Claude Haiku. Teto duro (ex.: US$ 5/mês) em <code>/config</code>.</td></tr>
+          <tr><td class="num-cell">7</td><td><b>Onde o worker roda?</b></td><td>No seu PC, sob demanda (<code>npm run worker</code>). Servidor sempre-ligado só se virar rotina pesada.</td></tr>
+          <tr><td class="num-cell">8</td><td><b>Login</b> no painel?</td><td>Supabase Auth com <b>uma conta só</b> (a sua).</td></tr>
+          <tr><td class="num-cell">9</td><td>Você está <b>confortável com TypeScript + React</b> básico?</td><td>Se não, dedicar 1 semana a um curso introdutório antes do passo 4. Isso muda o ritmo de tudo.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="recomendacao" style="border-bottom:none">
+  <div class="wrap">
+    <h2><span class="num">→</span> Posição final</h2>
+    <p class="sub">O resumo do que eu faria no seu lugar.</p>
+    <ol>
+      <li><strong>Google Places como fonte única do MVP</strong>, via <strong>Text Search</strong>, atrás de uma interface de fonte plugável. OSM e CNPJ entram depois sem reescrever nada.</li>
+      <li><strong>Custo controlado por construção, não por disciplina.</strong> Cota rígida diária no Google Cloud (bloqueia, não cobra) + teto interno no <code>api_usage</code> + orçamento por pesquisa + cache por Place ID. Os módulos <code>budget</code>/<code>cache</code>/<code>usage</code> vêm <em>antes</em> da descoberta no cronograma.</li>
+      <li><strong>Campos mínimos na busca, campos caros só sob demanda.</strong> A descoberta pede o suficiente pro score; <code>reviews</code> e horário só no lead priorizado, com cache.</li>
+      <li><strong>Deduplicação por Place ID</strong> em <code>places_cache</code>: pesquisa repetida ou sobreposta reaproveita leads, zero chamada nova.</li>
+      <li><strong>Cortar o n8n do MVP.</strong> Pipeline como funções TypeScript num worker local + tabela <code>jobs</code>.</li>
+      <li><strong>Score determinístico e transparente</strong>; funil de duas etapas pra IA (regras em todos, IA nos ~20% do topo).</li>
+    </ol>
+    <div class="callout rec">
+      <strong class="tag">Próximo passo concreto</strong>
+      O <strong>Anexo A</strong> abaixo é o passo a passo dessa configuração. Faça-o inteiro antes de escrever qualquer código que chame a Google.
+    </div>
+  </div>
+</section>
+
+<!-- Anexo A -->
+<section id="anexo-gcp">
+  <div class="wrap">
+    <h2><span class="num">A</span> Anexo — Configurar o Google Cloud com trava de custo</h2>
+    <p class="sub">Uma vez só, ~30 minutos. No fim você tem uma chave de API que, mesmo com um bug no código, não vira conta alta.</p>
+
+    <div class="callout">
+      <strong class="tag">Antes de começar — entenda uma coisa</strong>
+      A Places API <strong>exige um cartão de crédito cadastrado</strong>, mesmo pra usar só a cota gratuita. Isso é normal e inevitável. O cartão só é cobrado se você <em>passar</em> da cota grátis <em>e</em> não tiver colocado os limites deste anexo. Vamos colocar os limites justamente pra isso não acontecer.
+    </div>
+
+    <ol class="build">
+      <li><b>Criar o projeto</b><br>Entre em <code>console.cloud.google.com</code> com sua conta Google. Na barra de cima, no seletor de projeto, clique em <b>Novo projeto</b>. Nome: <code>prospekta</code>. Sem organização. Criar e selecionar esse projeto.</li>
+
+      <li><b>Ativar o faturamento (billing)</b><br>Menu <b>☰ → Faturamento</b>. &ldquo;Vincular uma conta de faturamento&rdquo; → adicionar cartão. Sem isso as APIs não funcionam. Deixe anotado <em>onde fica o botão &ldquo;Desativar faturamento&rdquo;</em> (Faturamento → Gerenciamento da conta) — é o seu freio de emergência absoluto.</li>
+
+      <li><b>Ativar as 3 APIs</b><br><b>☰ → APIs e serviços → Biblioteca</b>. Procure e clique em <b>Ativar</b> em cada uma:<br>· <b>Places API (New)</b> — a &ldquo;nova&rdquo;, não a antiga &ldquo;Places API&rdquo;<br>· <b>Geocoding API</b><br>· <b>PageSpeed Insights API</b></li>
+
+      <li><b>Criar a chave de API</b><br><b>APIs e serviços → Credenciais → Criar credenciais → Chave de API</b>. Copie a chave. Ela vai no arquivo <code>.env.local</code> do projeto (que o Next.js já ignora no Git) como <code>GOOGLE_MAPS_API_KEY=...</code>. Nunca coloque essa chave em código que roda no navegador — só o worker (servidor) usa.</li>
+
+      <li><b>Restringir a chave</b> <span class="tag2">reduz o estrago se ela vazar</span><br>Clique na chave recém-criada:<br>· <b>Restrições de API</b> → &ldquo;Restringir chave&rdquo; → marque só <b>Places API (New)</b>, <b>Geocoding API</b> e <b>PageSpeed Insights API</b>.<br>· <b>Restrições de aplicativo</b> → como o worker roda na sua casa (IP que muda), durante o desenvolvimento pode deixar <b>Nenhuma</b>; se um dia rodar num servidor fixo, mude pra <b>Endereços IP</b> e ponha o IP dele.</li>
+
+      <li><b>Cotas rígidas — a rede de segurança de verdade</b> <span class="tag2">isto bloqueia, não só avisa</span><br>Para <b>Places API (New)</b> e depois <b>Geocoding API</b>: abra a API → aba <b>Cotas e limites do sistema</b>. Procure o limite de <b>requisições por dia</b> (ou por minuto, se não houver o diário). Clique no lápis e reduza pra um número baixo — ex.: <b>Places 200/dia</b>, <b>Geocoding 100/dia</b>. Acima disso, a chamada <b>falha com erro</b> em vez de gerar cobrança. Você aumenta depois se precisar.<br><span style="color:var(--slate-soft);font-size:12.5px">Observação: em algumas SKUs da Places nova só existe limite por minuto, não por dia. Onde não houver o diário, o teto interno do app (o <code>api_usage</code>, seção 08) + o alerta de orçamento abaixo cobrem essa folga.</span></li>
+
+      <li><b>Alerta de orçamento</b> <span class="tag2">avisa, não bloqueia</span><br><b>Faturamento → Orçamentos e alertas → Criar orçamento</b>. Escopo: só o projeto <code>prospekta</code>. Valor: <b>US$ 1</b>. Alertas por e-mail em <b>50%, 90% e 100%</b>. Se você receber esse e-mail, algo está errado — investigue na hora.</li>
+
+      <li><b>Testar 1 chamada</b><br>No terminal do VS Code, rode o teste abaixo (troque <code>SUA_CHAVE</code>). Se voltar uma lista de escritórios de Iguape, está tudo certo. No dia seguinte, confira em <b>Faturamento → Relatórios</b> que ficou em <b>US$ 0</b> (dentro da cota grátis).</li>
+    </ol>
+
+    <h3>O teste da etapa 8</h3>
+    <pre>curl -X POST 'https://places.googleapis.com/v1/places:searchText' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Goog-Api-Key: <b>SUA_CHAVE</b>' \
+  -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress' \
+  -d '{"textQuery": "advocacia em Iguape, SP"}'</pre>
+    <p>Repare no cabeçalho <code>X-Goog-FieldMask</code>: <strong>é ele que controla o custo</strong>. Só os campos listados ali são retornados e cobrados. Pedir <code>places.id</code> e nomes é a faixa mais barata; adicionar <code>places.rating</code>, <code>places.websiteUri</code>, <code>places.nationalPhoneNumber</code> sobe de faixa — mas ainda assim é <em>uma</em> chamada pros 20 resultados.</p>
+
+    <div class="callout rec">
+      <strong class="tag">Resultado</strong>
+      Ao terminar este anexo você tem: um projeto isolado, 3 APIs ativas, uma chave restrita, um limite diário que <strong>trava</strong> o consumo, e um alerta em US$ 1. A partir daqui, o pior caso de um bug no código é &ldquo;as chamadas pararam de funcionar&rdquo; — nunca &ldquo;chegou uma fatura&rdquo;.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Prospekta · plano de construção v1 · fonte de descoberta: Google Places API · documento de análise, não contém código
+  </div>
+</footer>
