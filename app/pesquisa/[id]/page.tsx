@@ -22,6 +22,15 @@ export default async function PesquisaPage({
   if (!data) notFound();
   const pesquisa = data as Search;
 
+  const { data: jobDescoberta } = await supabase
+    .from("jobs")
+    .select("status")
+    .eq("search_id", id)
+    .eq("tipo", "descobrir")
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   return (
     <div className="flex flex-col gap-6">
       <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
@@ -38,7 +47,8 @@ export default async function PesquisaPage({
         </p>
       </div>
 
-      <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+      <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <Info rotulo="Descoberta" valor={jobDescoberta?.status ?? "sem job"} />
         <Info rotulo="Orcamento de chamadas" valor={String(pesquisa.orcamento_chamadas)} />
         <Info rotulo="Chamadas feitas" valor={String(pesquisa.chamadas_feitas)} />
         <Info rotulo="Custo estimado" valor={`US$ ${pesquisa.custo_estimado_usd}`} />
@@ -46,7 +56,9 @@ export default async function PesquisaPage({
 
       <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-10 text-center dark:border-zinc-700">
         <p className="text-sm text-zinc-500">
-          A descoberta de empresas (Google Places) entra na proxima etapa.
+          A pesquisa esta salva e o job de descoberta esta{" "}
+          <span className="font-mono">{jobDescoberta?.status ?? "?"}</span>. A busca de
+          empresas (Google Places) roda na proxima etapa.
         </p>
       </div>
     </div>

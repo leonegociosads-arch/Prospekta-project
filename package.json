@@ -11,7 +11,8 @@
     "check:google": "node --env-file=.env.local scripts/check-google-key.mjs",
     "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs",
     "db:smoke": "node --env-file=.env.local scripts/db-smoke.mjs",
-    "check:guardas": "node --import tsx --env-file=.env.local scripts/check-guardas.mts"
+    "check:guardas": "node --import tsx --env-file=.env.local scripts/check-guardas.mts",
+    "check:pesquisa": "node --import tsx --env-file=.env.local scripts/check-pesquisa.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
