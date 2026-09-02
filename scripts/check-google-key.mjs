@@ -12,16 +12,21 @@ if (!key) {
 }
 
 console.log("\nChave carregada:", key.slice(0, 6) + "..." + key.slice(-4));
-console.log("Testando: Text Search -> \"advocacia em Iguape, SP\"\n");
+console.log("Testando: Text Search -> \"advocacia em Iguape, SP\" (pageSize 3)\n");
 
 const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
     "X-Goog-Api-Key": key,
+    // Faixa minima: id + nome + endereco. Nada de rating/site/telefone aqui.
     "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress",
   },
-  body: JSON.stringify({ textQuery: "advocacia em Iguape, SP", languageCode: "pt-BR" }),
+  body: JSON.stringify({
+    textQuery: "advocacia em Iguape, SP",
+    languageCode: "pt-BR",
+    pageSize: 3,
+  }),
 });
 
 const data = await res.json();
