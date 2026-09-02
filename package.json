@@ -12,7 +12,9 @@
     "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs",
     "db:smoke": "node --env-file=.env.local scripts/db-smoke.mjs",
     "check:guardas": "node --import tsx --env-file=.env.local scripts/check-guardas.mts",
-    "check:pesquisa": "node --import tsx --env-file=.env.local scripts/check-pesquisa.mts"
+    "check:pesquisa": "node --import tsx --env-file=.env.local scripts/check-pesquisa.mts",
+    "check:descoberta": "node --import tsx --env-file=.env.local scripts/check-descoberta.mts",
+    "descoberta:real": "node --import tsx --env-file=.env.local scripts/descoberta-real.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
