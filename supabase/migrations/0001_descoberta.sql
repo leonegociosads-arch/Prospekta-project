@@ -2,6 +2,7 @@
 --  Prospekta - migration 0001
 --  Nucleo: pesquisa, descoberta via Google Places, cache e custo.
 --  Rode este arquivo inteiro no SQL Editor do Supabase.
+--  DEPOIS rode 0002_grants.sql (permissoes) - sem ele da "permission denied".
 -- ============================================================
 
 create extension if not exists "pgcrypto";  -- gen_random_uuid()
