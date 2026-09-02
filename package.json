@@ -8,7 +8,8 @@
     "start": "next start -p 3100",
     "lint": "eslint",
     "check:google": "node --env-file=.env.local scripts/check-google-key.mjs",
-    "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs"
+    "check:supabase": "node --env-file=.env.local scripts/check-supabase.mjs",
+    "db:smoke": "node --env-file=.env.local scripts/db-smoke.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",

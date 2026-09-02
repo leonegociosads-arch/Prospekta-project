@@ -1,4 +1,4 @@
-// Verifica a conexao com o Supabase e se a migration 0001 foi aplicada.
+// Verifica a conexao com o Supabase e se as 12 tabelas do Prospekta existem.
 // Uso:  npm run check:supabase
 
 import { createClient } from "@supabase/supabase-js";
@@ -20,35 +20,44 @@ const supabase = createClient(url, serviceKey, {
   auth: { persistSession: false },
 });
 
+// Ordem = ordem das migrations
 const esperadas = [
+  // 0001
   "searches",
   "region_cache",
   "places_cache",
   "leads",
   "search_leads",
   "api_usage",
+  // 0003
+  "site_analyses",
+  "ad_signals",
+  "social_analyses",
+  "scores",
+  "ai_diagnoses",
+  "jobs",
 ];
 
 let faltando = 0;
 
 for (const tabela of esperadas) {
-  const { error, count } = await supabase
-    .from(tabela)
-    .select("*", { count: "exact", head: true });
+  // .select("*").limit(1) da erro claro (PGRST205) se a tabela nao existe
+  const { error } = await supabase.from(tabela).select("*").limit(1);
 
   if (error) {
     faltando++;
-    console.log(`  [x] ${tabela.padEnd(14)} -> ${error.message}`);
+    console.log(`  [x]  ${tabela.padEnd(16)} -> ${error.message}`);
   } else {
-    console.log(`  [ok] ${tabela.padEnd(14)} -> ${count} linha(s)`);
+    console.log(`  [ok] ${tabela.padEnd(16)}`);
   }
 }
 
 if (faltando > 0) {
   console.error(
-    `\n[x] ${faltando} tabela(s) faltando. Rode supabase/migrations/0001_descoberta.sql no SQL Editor do Supabase.\n`,
+    `\n[x] ${faltando} tabela(s) faltando.` +
+      `\n    Rode as migrations que faltam (supabase/migrations/) no SQL Editor do Supabase.\n`,
   );
   process.exit(1);
 }
 
-console.log("\n[ok] Conexao e schema conferidos.\n");
+console.log("\n[ok] Conexao e as 12 tabelas conferidas.\n");
