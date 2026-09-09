@@ -1,0 +1,20 @@
+# A Vercel publica SO o painel Next.js (app/, lib/, components/).
+# O que esta aqui nao e enviado para o build da Vercel porque nunca e
+# importado pelo app - roda so na sua maquina.
+
+# Worker pesado (roda local: `npm run worker`)
+worker/
+
+# Scripts de checagem e de operacao (rodam local com `npm run <script>`)
+scripts/
+
+# Testes (rodam local com `npm test`)
+tests/
+
+# Migrations SQL (voce aplica no SQL Editor do Supabase)
+supabase/
+
+# Documentacao
+docs/
+AGENTS.md
+CLAUDE.md
