@@ -6,14 +6,14 @@
 //  - testes usam um fake em memoria (tests/guardas/fake-store.ts)
 
 export type RegistroDeUso = {
-  provedor: "google" | "ia";
-  /** text_search | place_details | geocoding | pagespeed | ia_diagnosis | ... */
+  provedor: "google" | "ia" | "meta";
+  /** text_search | place_details | geocoding | pagespeed | ia_diagnosis | meta_ad_library | ... */
   endpoint: string;
   searchId?: string | null;
   /** quantas "unidades" essa chamada consome (default 1) */
   unidades?: number;
   /** faixa de campos pedida na Places API, quando se aplica */
-  faixaCampos?: "essentials" | "pro" | "enterprise" | null;
+  faixaCampos?: "essentials" | "pro" | "enterprise" | "atmosphere" | null;
   /** custo estimado em USD, quando da para estimar (default 0) */
   custoEstimadoUsd?: number;
   obs?: string | null;

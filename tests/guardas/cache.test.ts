@@ -15,6 +15,9 @@ const CONFIG: GuardaConfig = {
   tetoMensalChamadas: 5,
   ttlBuscaDias: 60,
   ttlDetalhesDias: 30,
+  ttlSiteDias: 14,
+  ttlSocialDias: 30,
+  pagespeedAtivo: false,
 };
 
 // ------------------------------------------------------------

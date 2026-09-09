@@ -1,62 +1,112 @@
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Search } from "@/lib/db-types";
+import { EstadoVazio, Aviso, SeloScore } from "@/components/ui";
+import { ListaPesquisas, type PesquisaResumo } from "./lista-pesquisas";
 
-// Sempre buscar do banco no momento do acesso (nao gerar pagina estatica).
 export const dynamic = "force-dynamic";
+
+type LeadFav = { id: string; nome: string; categoria: string | null };
 
 export default async function Home() {
   const supabase = supabaseServer();
-  const { data, error } = await supabase
+
+  const { data: searchesRaw, error } = await supabase
     .from("searches")
     .select("*")
     .order("criada_em", { ascending: false });
+  const searches = (searchesRaw ?? []) as Search[];
 
-  const pesquisas = (data ?? []) as Search[];
+  // contagem de leads por pesquisa, numa consulta so
+  const contagem = new Map<string, number>();
+  {
+    const { data: vinc } = await supabase.from("search_leads").select("search_id");
+    for (const v of vinc ?? []) {
+      const s = v.search_id as string;
+      contagem.set(s, (contagem.get(s) ?? 0) + 1);
+    }
+  }
+
+  const pesquisas: PesquisaResumo[] = searches.map((s) => ({
+    id: s.id,
+    nicho: s.nicho,
+    regiao_texto: s.regiao_texto,
+    raio_km: s.raio_km,
+    status: s.status,
+    totalLeads: contagem.get(s.id) ?? 0,
+  }));
+
+  // favoritos
+  const { data: favRaw } = await supabase
+    .from("leads")
+    .select("id, nome, categoria")
+    .eq("favorito", true)
+    .order("nome", { ascending: true })
+    .limit(50);
+  const favoritos = (favRaw ?? []) as LeadFav[];
+  const scoreFav = new Map<string, number>();
+  if (favoritos.length > 0) {
+    const { data: sc } = await supabase
+      .from("scores")
+      .select("lead_id, total")
+      .in(
+        "lead_id",
+        favoritos.map((f) => f.id),
+      );
+    for (const s of sc ?? []) scoreFav.set(s.lead_id as string, s.total as number);
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Pesquisas</h1>
-        <p className="text-sm text-zinc-500">
-          Cada pesquisa e uma busca por um nicho numa regiao.
-        </p>
-      </div>
-
-      {error && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          Erro ao ler o banco: {error.message}
-        </p>
-      )}
-
-      {pesquisas.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-12 text-center dark:border-zinc-700">
-          <p className="text-sm text-zinc-500">Nenhuma pesquisa ainda.</p>
-          <Link
-            href="/pesquisa/nova"
-            className="mt-3 inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
-          >
-            Criar a primeira
-          </Link>
+    <div className="flex flex-col gap-8">
+      <section className="flex flex-col gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Pesquisas</h1>
+          <p className="text-sm text-zinc-500">Cada pesquisa é uma busca por um nicho numa região.</p>
         </div>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {pesquisas.map((p) => (
-            <li key={p.id}>
+
+        {error && <Aviso>Erro ao ler o banco: {error.message}</Aviso>}
+
+        {pesquisas.length === 0 ? (
+          <EstadoVazio
+            titulo="Nenhuma pesquisa ainda"
+            descricao="Comece criando uma busca — cidade, nicho e raio."
+            acao={
               <Link
-                href={`/pesquisa/${p.id}`}
-                className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                href="/pesquisa/nova"
+                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
               >
-                <span>
-                  <span className="font-medium">{p.nicho}</span>
-                  <span className="text-zinc-500"> · {p.regiao_texto}</span>
-                  <span className="text-zinc-400"> · {p.raio_km} km</span>
-                </span>
-                <span className="font-mono text-xs text-zinc-400">{p.status}</span>
+                Criar a primeira
               </Link>
-            </li>
-          ))}
-        </ul>
+            }
+          />
+        ) : (
+          <ListaPesquisas pesquisas={pesquisas} />
+        )}
+      </section>
+
+      {favoritos.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-semibold">
+            Favoritos <span className="text-zinc-400">({favoritos.length})</span>
+          </h2>
+          <ul className="flex flex-col gap-2">
+            {favoritos.map((l) => (
+              <li key={l.id}>
+                <Link
+                  href={`/lead/${l.id}`}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-200 px-4 py-2.5 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                >
+                  <span className="text-amber-500">★</span>
+                  <SeloScore score={scoreFav.get(l.id) ?? null} />
+                  <span className="min-w-0">
+                    <span className="font-medium">{l.nome}</span>
+                    <span className="block text-xs text-zinc-400">{l.categoria ?? "—"}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

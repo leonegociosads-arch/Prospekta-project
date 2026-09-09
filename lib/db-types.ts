@@ -43,6 +43,11 @@ export type Lead = {
   qtd_avaliacoes: number | null;
   status_negocio: string | null;
   bruto: Json | null;
+  telefone_internacional: string | null;
+  maps_uri: string | null;
+  horarios: string[] | null;
+  enriquecido_em: string | null;
+  favorito: boolean;
   criado_em: string;
   atualizado_em: string;
 };
@@ -102,6 +107,12 @@ export type SiteAnalysis = {
   tem_ga: boolean | null;
   tem_gtm: boolean | null;
   tem_google_ads: boolean | null;
+  tem_doubleclick: boolean | null;
+  tls_ok: boolean | null;
+  tls_erro: string | null;
+  qtd_redirects: number | null;
+  titulo: string | null;
+  servidor: string | null;
   stack: Json | null;
   sinais: Json | null;
   erro: string | null;
@@ -121,11 +132,14 @@ export type AdSignal = {
   erro: string | null;
 };
 
+export type StatusSocial = "encontrado" | "nao_encontrado" | "desconhecido" | "sem_link";
+
 export type SocialAnalysis = {
   id: string;
   lead_id: string;
   plataforma: Plataforma;
   verificado_em: string;
+  status: StatusSocial | null;
   perfil_existe: boolean | null;
   perfil_url: string | null;
   seguidores: number | null;
@@ -147,15 +161,25 @@ export type Score = {
   versao_formula: string;
 };
 
+export type ConfiancaIa = "alta" | "media" | "baixa";
+
 export type AiDiagnosis = {
   id: string;
   lead_id: string;
   criado_em: string;
+  atualizado_em: string;
   modelo: string;
   versao_prompt: string;
   resumo: string | null;
   problemas: Json | null;
+  oportunidades: Json | null;
+  servico_sugerido: string | null;
+  angulo_comercial: string | null;
   angulo_de_entrada: string | null;
+  confianca: ConfiancaIa | null;
+  fatos_utilizados: Json | null;
+  entrada: Json | null;
+  erro: string | null;
   tokens_entrada: number | null;
   tokens_saida: number | null;
   custo_usd: number;

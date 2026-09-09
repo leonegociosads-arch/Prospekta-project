@@ -18,7 +18,7 @@ if (!url || !key) {
 
 const db = createClient(url, key, { auth: { persistSession: false } });
 const store = criarStoreSupabase(db);
-const config = { tetoMensalChamadas: 1_000_000, ttlBuscaDias: 60, ttlDetalhesDias: 30 };
+const config = { tetoMensalChamadas: 1_000_000, ttlBuscaDias: 60, ttlDetalhesDias: 30, ttlSiteDias: 14, ttlSocialDias: 30, pagespeedAtivo: false };
 
 let ok = 0;
 let fail = 0;
