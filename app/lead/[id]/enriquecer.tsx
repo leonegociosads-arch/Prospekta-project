@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { enriquecerLeadAction, ESTADO_ENRIQUECIMENTO_INICIAL } from "./actions";
+import { enriquecerLeadAction } from "./actions";
+import { ESTADO_ENRIQUECIMENTO_INICIAL } from "./estado";
 
 export function EnriquecerLead({ leadId, temPlaceId }: { leadId: string; temPlaceId: boolean }) {
   const router = useRouter();

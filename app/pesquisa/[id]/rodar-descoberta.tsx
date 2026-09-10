@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  rodarDescobertaAction,
-  ESTADO_DESCOBERTA_INICIAL,
-} from "./actions";
+import { rodarDescobertaAction } from "./actions";
+import { ESTADO_DESCOBERTA_INICIAL } from "./estado";
 
 export function RodarDescoberta({ searchId, jobStatus }: { searchId: string; jobStatus: string | null }) {
   const router = useRouter();

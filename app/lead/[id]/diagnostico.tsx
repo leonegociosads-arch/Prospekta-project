@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { diagnosticarLeadAction, ESTADO_DIAGNOSTICO_INICIAL } from "./actions";
+import { diagnosticarLeadAction } from "./actions";
+import { ESTADO_DIAGNOSTICO_INICIAL } from "./estado";
 
 export function GerarDiagnostico({ leadId, temScore }: { leadId: string; temScore: boolean }) {
   const router = useRouter();

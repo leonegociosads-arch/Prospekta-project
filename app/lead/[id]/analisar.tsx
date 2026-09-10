@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { analisarSiteAction, ESTADO_ANALISE_INICIAL } from "./actions";
+import { analisarSiteAction } from "./actions";
+import { ESTADO_ANALISE_INICIAL } from "./estado";
 
 const ROTULOS: Record<string, string> = {
   ok: "Análise concluída.",

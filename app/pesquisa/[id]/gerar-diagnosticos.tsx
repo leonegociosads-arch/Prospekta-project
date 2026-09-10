@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  enfileirarDiagnosticosAction,
-  ESTADO_ENFILEIRAR_DIAGNOSTICO_INICIAL,
-} from "./actions";
+import { enfileirarDiagnosticosAction } from "./actions";
+import { ESTADO_ENFILEIRAR_DIAGNOSTICO_INICIAL } from "./estado";
 
 export function GerarDiagnosticos({
   searchId,

@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { enfileirarScoresAction, ESTADO_ENFILEIRAR_SCORE_INICIAL } from "./actions";
+import { enfileirarScoresAction } from "./actions";
+import { ESTADO_ENFILEIRAR_SCORE_INICIAL } from "./estado";
 
 export function CalcularScores({
   searchId,

@@ -1,16 +1,9 @@
 "use server";
 
 import { supabaseServer } from "@/lib/supabase/server";
-import { validarNovaPesquisa, type CampoPesquisa } from "@/lib/pesquisa/validacao";
+import { validarNovaPesquisa } from "@/lib/pesquisa/validacao";
 import { estimarConsumo } from "@/lib/pesquisa/estimativa";
-
-export type EstadoForm =
-  | { status: "idle" }
-  | { status: "erro-validacao"; erros: Partial<Record<CampoPesquisa, string>> }
-  | { status: "erro-supabase"; mensagem: string }
-  | { status: "ok"; searchId: string };
-
-export const ESTADO_INICIAL: EstadoForm = { status: "idle" };
+import type { EstadoForm } from "./estado";
 
 export async function criarPesquisaAction(
   _anterior: EstadoForm,

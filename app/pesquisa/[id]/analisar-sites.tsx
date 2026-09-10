@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { enfileirarAnalisesAction, ESTADO_ENFILEIRAR_INICIAL } from "./actions";
+import { enfileirarAnalisesAction } from "./actions";
+import { ESTADO_ENFILEIRAR_INICIAL } from "./estado";
 
 export function AnalisarSites({
   searchId,

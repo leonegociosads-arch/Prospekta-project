@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { detectarAdsAction, ESTADO_ADS_INICIAL } from "./actions";
+import { detectarAdsAction } from "./actions";
+import { ESTADO_ADS_INICIAL } from "./estado";
 
 export function DetectarAds({ leadId }: { leadId: string }) {
   const router = useRouter();

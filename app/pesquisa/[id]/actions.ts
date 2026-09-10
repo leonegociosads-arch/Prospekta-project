@@ -2,20 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { supabaseServer } from "@/lib/supabase/server";
-import { executarDescoberta, type ResumoDescoberta } from "@/lib/descoberta/executar";
-import { enfileirarAnalisesDeSite, type ResultadoEnfileirar } from "@/lib/analise-site/enfileirar";
-import { enfileirarScores, type ResultadoEnfileirarScore } from "@/lib/score/enfileirar";
-import {
-  enfileirarDiagnosticos,
-  type ResultadoEnfileirarDiagnostico,
-} from "@/lib/ia/enfileirar";
-
-export type EstadoDescoberta =
-  | { status: "idle" }
-  | { status: "ok"; resumo: ResumoDescoberta }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_DESCOBERTA_INICIAL: EstadoDescoberta = { status: "idle" };
+import { executarDescoberta } from "@/lib/descoberta/executar";
+import { enfileirarAnalisesDeSite } from "@/lib/analise-site/enfileirar";
+import { enfileirarScores } from "@/lib/score/enfileirar";
+import { enfileirarDiagnosticos } from "@/lib/ia/enfileirar";
+import type {
+  EstadoDescoberta,
+  EstadoEnfileirar,
+  EstadoEnfileirarScore,
+  EstadoEnfileirarDiagnostico,
+} from "./estado";
 
 export async function rodarDescobertaAction(
   searchId: string,
@@ -45,13 +41,6 @@ export async function rodarDescobertaAction(
   }
 }
 
-export type EstadoEnfileirar =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnfileirar }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ENFILEIRAR_INICIAL: EstadoEnfileirar = { status: "idle" };
-
 export async function enfileirarAnalisesAction(
   searchId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
@@ -71,13 +60,6 @@ export async function enfileirarAnalisesAction(
   }
 }
 
-export type EstadoEnfileirarScore =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnfileirarScore }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ENFILEIRAR_SCORE_INICIAL: EstadoEnfileirarScore = { status: "idle" };
-
 export async function enfileirarScoresAction(
   searchId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
@@ -96,13 +78,6 @@ export async function enfileirarScoresAction(
     };
   }
 }
-
-export type EstadoEnfileirarDiagnostico =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnfileirarDiagnostico }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ENFILEIRAR_DIAGNOSTICO_INICIAL: EstadoEnfileirarDiagnostico = { status: "idle" };
 
 export async function enfileirarDiagnosticosAction(
   searchId: string,

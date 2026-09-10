@@ -3,26 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { supabaseServer } from "@/lib/supabase/server";
 import { analisarSite } from "@/lib/analise-site/analisar";
-import type { ResultadoAnaliseSite } from "@/lib/analise-site/tipos";
 import { calcularEPersistirScore } from "@/lib/score/persistir";
 import { enriquecerLead } from "@/lib/enriquecimento/enriquecer";
-import type { ResultadoEnriquecimento } from "@/lib/enriquecimento/tipos";
 import { ErroDeOrcamento } from "@/lib/guardas";
 import { ErroGoogle, mensagemAmigavel } from "@/lib/descoberta/erros";
 import { analisarSocial } from "@/lib/analise-social/analisar-social";
-import type { ResultadoAnaliseSocial } from "@/lib/analise-social/tipos";
 import { diagnosticarLead } from "@/lib/ia/diagnosticar";
-import type { ResultadoDiagnostico } from "@/lib/ia/tipos";
 import { ErroIa, mensagemAmigavelIa } from "@/lib/ia/erros";
 import { analisarAds } from "@/lib/ads/analisar-ads";
-import type { ResultadoDetecaoAds } from "@/lib/ads/tipos";
-
-export type EstadoAnalise =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoAnaliseSite }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ANALISE_INICIAL: EstadoAnalise = { status: "idle" };
+import type {
+  EstadoAnalise,
+  EstadoScore,
+  EstadoEnriquecimento,
+  EstadoSocial,
+  EstadoFavorito,
+  EstadoAds,
+  EstadoDiagnostico,
+} from "./estado";
 
 export async function analisarSiteAction(
   leadId: string,
@@ -47,13 +44,6 @@ export async function analisarSiteAction(
   }
 }
 
-export type EstadoScore =
-  | { status: "idle" }
-  | { status: "ok"; total: number }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_SCORE_INICIAL: EstadoScore = { status: "idle" };
-
 export async function calcularScoreAction(
   leadId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
@@ -75,13 +65,6 @@ export async function calcularScoreAction(
     };
   }
 }
-
-export type EstadoEnriquecimento =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnriquecimento }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ENRIQUECIMENTO_INICIAL: EstadoEnriquecimento = { status: "idle" };
 
 export async function enriquecerLeadAction(
   leadId: string,
@@ -116,13 +99,6 @@ export async function enriquecerLeadAction(
   }
 }
 
-export type EstadoSocial =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoAnaliseSocial }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_SOCIAL_INICIAL: EstadoSocial = { status: "idle" };
-
 export async function analisarSocialAction(
   leadId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
@@ -145,8 +121,6 @@ export async function analisarSocialAction(
   }
 }
 
-export type EstadoFavorito = { favorito: boolean; erro?: string };
-
 /** Liga/desliga o favorito de um lead. Usado na tabela da pesquisa e na pagina do lead. */
 export async function definirFavoritoAction(
   leadId: string,
@@ -167,13 +141,6 @@ export async function definirFavoritoAction(
     return { favorito: !favorito, erro: "Falha ao salvar o favorito." };
   }
 }
-
-export type EstadoAds =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoDetecaoAds }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ADS_INICIAL: EstadoAds = { status: "idle" };
 
 export async function detectarAdsAction(
   leadId: string,
@@ -196,13 +163,6 @@ export async function detectarAdsAction(
     };
   }
 }
-
-export type EstadoDiagnostico =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoDiagnostico }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_DIAGNOSTICO_INICIAL: EstadoDiagnostico = { status: "idle" };
 
 export async function diagnosticarLeadAction(
   leadId: string,

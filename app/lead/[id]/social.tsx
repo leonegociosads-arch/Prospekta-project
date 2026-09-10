@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { analisarSocialAction, ESTADO_SOCIAL_INICIAL } from "./actions";
+import { analisarSocialAction } from "./actions";
+import { ESTADO_SOCIAL_INICIAL } from "./estado";
 
 export function AnalisarRedes({ leadId }: { leadId: string }) {
   const router = useRouter();

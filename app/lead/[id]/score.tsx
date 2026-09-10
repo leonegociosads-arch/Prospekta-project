@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { calcularScoreAction, ESTADO_SCORE_INICIAL } from "./actions";
+import { calcularScoreAction } from "./actions";
+import { ESTADO_SCORE_INICIAL } from "./estado";
 
 export function RecalcularScore({ leadId }: { leadId: string }) {
   const router = useRouter();

@@ -4,7 +4,8 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NICHOS } from "@/lib/nichos";
 import { LIMITES, estimarConsumo } from "@/lib/pesquisa/estimativa";
-import { criarPesquisaAction, ESTADO_INICIAL, type EstadoForm } from "./actions";
+import { criarPesquisaAction } from "./actions";
+import { ESTADO_INICIAL, type EstadoForm } from "./estado";
 
 const campoBase =
   "rounded-md border bg-white px-3 py-2 text-sm outline-none dark:bg-zinc-900 " +
