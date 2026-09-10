@@ -9,6 +9,9 @@ import { criarStoreSupabase } from "@/lib/guardas/store-supabase";
 import { chamarComGuardas, ErroDeOrcamento, type PlanoDeChamada } from "@/lib/guardas";
 import type { ContextoDescoberta, FonteDeDados } from "@/lib/sources/types";
 import { criarFonteGooglePlaces } from "@/lib/sources/google-places";
+import { enfileirarAnalisesDeSite } from "@/lib/analise-site/enfileirar";
+import { enfileirarScores } from "@/lib/score/enfileirar";
+import { enfileirarAnalisesSociais } from "@/lib/analise-social/enfileirar";
 import { resolverRegiao } from "./geocoding";
 import { persistirLead } from "./persistir";
 import { ErroGoogle, mensagemAmigavel } from "./erros";
@@ -110,6 +113,22 @@ export async function executarDescoberta(
       "feito",
       errosPorLead.length ? `${errosPorLead.length} lead(s) com erro ao gravar` : null,
     );
+
+    // Etapa 17: assim que os leads existem, agenda o processamento de todos.
+    // analisar_site -> o worker encadeia calcular_score e detectar_ads;
+    // calcular_score cobre os leads sem site; analisar_social e um job a parte.
+    // Best-effort: nao faz chamada paga e nao pode derrubar a descoberta.
+    if (res.leads.length > 0) {
+      try {
+        await Promise.all([
+          enfileirarAnalisesDeSite(db, { searchId }),
+          enfileirarScores(db, { searchId }),
+          enfileirarAnalisesSociais(db, { searchId }),
+        ]);
+      } catch (eEnf) {
+        console.warn("[descoberta] processamento automatico nao foi agendado:", eEnf);
+      }
+    }
 
     return {
       status: res.status === "zero-resultados" ? "zero-resultados" : "ok",

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { LeadEnriquecido } from "@/lib/leads/tipos";
+import type { LeadEnriquecido, SiteSituacao } from "@/lib/leads/tipos";
 import {
   aplicarCriterios,
   contarFiltrosAtivos,
@@ -17,6 +17,21 @@ import { Favoritar } from "@/app/lead/[id]/favoritar";
 
 const selectCls =
   "rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400";
+
+const SITE_LABEL: Record<SiteSituacao, { texto: string; cls: string }> = {
+  ok: { texto: "site ok", cls: "text-emerald-600 dark:text-emerald-400" },
+  instavel: { texto: "site instável", cls: "text-amber-600 dark:text-amber-400" },
+  "fora-do-ar": { texto: "site fora do ar", cls: "text-red-600 dark:text-red-400" },
+  "nao-analisado": { texto: "site não analisado", cls: "text-zinc-400" },
+  "sem-site": { texto: "sem site", cls: "text-zinc-400" },
+};
+
+function VeredictoAnuncio({ v }: { v: LeadEnriquecido["vereditoAnuncio"] }) {
+  if (v === "forte") return <span className="text-emerald-600 dark:text-emerald-400">anuncia (forte)</span>;
+  if (v === "alguns") return <span className="text-emerald-600 dark:text-emerald-400">indícios de anúncio</span>;
+  if (v === "nenhum") return <span className="text-zinc-500">sem indício de anúncio</span>;
+  return null;
+}
 
 export function LeadsTabela({
   searchId,
@@ -150,64 +165,102 @@ export function LeadsTabela({
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-          <table className="w-full min-w-[560px] text-left text-sm">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-zinc-200 text-xs text-zinc-500 dark:border-zinc-800">
               <tr>
                 <th className="w-8 px-2 py-2" />
                 <th className="px-2 py-2 font-medium">Score</th>
                 <th className="px-3 py-2 font-medium">Empresa</th>
-                <th className="px-3 py-2 font-medium">Avaliações</th>
+                <th className="px-3 py-2 font-medium">Contato</th>
                 <th className="px-3 py-2 font-medium">Sinais</th>
               </tr>
             </thead>
             <tbody>
-              {visiveis.map((l) => (
-                <tr key={l.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-900">
-                  <td className="px-2 py-2 align-top">
-                    <Favoritar leadId={l.id} inicial={l.favorito} tamanho="sm" />
-                  </td>
-                  <td className="px-2 py-2 align-top">
-                    <SeloScore score={l.score} />
-                  </td>
-                  <td className="px-3 py-2">
-                    <Link
-                      href={`/lead/${l.id}`}
-                      className="font-medium underline-offset-2 hover:underline"
-                    >
-                      {l.nome}
-                    </Link>
-                    <div className="text-xs text-zinc-500">
-                      {l.categoria ?? "—"}
-                      {l.status_negocio && l.status_negocio !== "OPERATIONAL" && (
-                        <span className="ml-1 text-amber-600">· {l.status_negocio}</span>
+              {visiveis.map((l) => {
+                const site = SITE_LABEL[l.siteSituacao];
+                return (
+                  <tr
+                    key={l.id}
+                    className="border-b border-zinc-100 last:border-0 dark:border-zinc-900"
+                  >
+                    <td className="px-2 py-2 align-top">
+                      <Favoritar leadId={l.id} inicial={l.favorito} tamanho="sm" />
+                    </td>
+                    <td className="px-2 py-2 align-top">
+                      <SeloScore score={l.score} />
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <Link
+                        href={`/lead/${l.id}`}
+                        className="font-medium underline-offset-2 hover:underline"
+                      >
+                        {l.nome}
+                      </Link>
+                      <div className="text-xs text-zinc-500">
+                        {l.categoria ?? "—"}
+                        {l.status_negocio && l.status_negocio !== "OPERATIONAL" && (
+                          <span className="ml-1 text-amber-600">· {l.status_negocio}</span>
+                        )}
+                      </div>
+                      {l.avaliacao != null && (
+                        <div className="text-xs text-zinc-400 tabular-nums">
+                          ★ {l.avaliacao} ({l.qtd_avaliacoes ?? 0})
+                        </div>
                       )}
-                    </div>
-                    {l.endereco && <div className="text-xs text-zinc-400">{l.endereco}</div>}
-                  </td>
-                  <td className="px-3 py-2 align-top tabular-nums">
-                    {l.avaliacao != null ? `${l.avaliacao} (${l.qtd_avaliacoes ?? 0})` : "—"}
-                  </td>
-                  <td className="px-3 py-2 align-top text-xs text-zinc-500">
-                    <div className="flex flex-wrap gap-1">
-                      {(l.site_url ?? "").trim() ? (
-                        <a
-                          href={l.site_url ?? undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                        >
-                          site
-                        </a>
-                      ) : (
-                        <span className="text-zinc-400">sem site</span>
-                      )}
-                      {l.temSinalAnuncio === true && <span className="text-emerald-600">anúncio</span>}
-                      {l.temDiagnostico && <span className="text-zinc-500">diagnóstico</span>}
-                    </div>
-                    {l.telefone && <div className="mt-0.5">{l.telefone}</div>}
-                  </td>
-                </tr>
-              ))}
+                      {l.endereco && <div className="text-xs text-zinc-400">{l.endereco}</div>}
+                    </td>
+                    <td className="px-3 py-2 align-top text-xs text-zinc-500">
+                      <div className="flex flex-col gap-0.5">
+                        {l.telefone && <span className="tabular-nums">{l.telefone}</span>}
+                        {l.temWhatsapp === true && (
+                          <span className="text-emerald-600 dark:text-emerald-400">WhatsApp no site</span>
+                        )}
+                        <span className="flex flex-wrap gap-2">
+                          {(l.site_url ?? "").trim() ? (
+                            <a
+                              href={l.site_url ?? undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              site
+                            </a>
+                          ) : null}
+                          {l.instagram_url && (
+                            <a
+                              href={l.instagram_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              instagram
+                            </a>
+                          )}
+                          {l.facebook_url && (
+                            <a
+                              href={l.facebook_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              facebook
+                            </a>
+                          )}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 align-top text-xs">
+                      <div className="flex flex-col gap-0.5">
+                        <span className={site.cls}>{site.texto}</span>
+                        <VeredictoAnuncio v={l.vereditoAnuncio} />
+                        {l.temDiagnostico && (
+                          <span className="text-zinc-500">diagnóstico de IA</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

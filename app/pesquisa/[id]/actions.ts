@@ -5,11 +5,11 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { executarDescoberta } from "@/lib/descoberta/executar";
 import { enfileirarAnalisesDeSite } from "@/lib/analise-site/enfileirar";
 import { enfileirarScores } from "@/lib/score/enfileirar";
+import { enfileirarAnalisesSociais } from "@/lib/analise-social/enfileirar";
 import { enfileirarDiagnosticos } from "@/lib/ia/enfileirar";
 import type {
   EstadoDescoberta,
-  EstadoEnfileirar,
-  EstadoEnfileirarScore,
+  EstadoReprocessar,
   EstadoEnfileirarDiagnostico,
 } from "./estado";
 
@@ -41,40 +41,33 @@ export async function rodarDescobertaAction(
   }
 }
 
-export async function enfileirarAnalisesAction(
+/**
+ * Reagenda site + score + redes de todos os leads da pesquisa que ainda nao
+ * tem job aberto. Usado pelo botao "Reprocessar pendentes" - a descoberta ja
+ * faz isso sozinha ao terminar (etapa 17); aqui e so para casos de falha.
+ */
+export async function reprocessarPendentesAction(
   searchId: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
-  _anterior: EstadoEnfileirar,
-): Promise<EstadoEnfileirar> {
+  _anterior: EstadoReprocessar,
+): Promise<EstadoReprocessar> {
   try {
     const db = supabaseServer();
-    const resultado = await enfileirarAnalisesDeSite(db, { searchId });
+    const [site, score, social] = await Promise.all([
+      enfileirarAnalisesDeSite(db, { searchId }),
+      enfileirarScores(db, { searchId }),
+      enfileirarAnalisesSociais(db, { searchId }),
+    ]);
     revalidatePath(`/pesquisa/${searchId}`);
-    return { status: "ok", resultado };
-  } catch (e) {
-    console.error("[enfileirarAnalises] excecao:", e);
     return {
-      status: "erro",
-      mensagem: "Erro inesperado ao enfileirar as analises. Veja o terminal do servidor.",
+      status: "ok",
+      enfileirados: site.enfileirados + score.enfileirados + social.enfileirados,
     };
-  }
-}
-
-export async function enfileirarScoresAction(
-  searchId: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
-  _anterior: EstadoEnfileirarScore,
-): Promise<EstadoEnfileirarScore> {
-  try {
-    const db = supabaseServer();
-    const resultado = await enfileirarScores(db, { searchId });
-    revalidatePath(`/pesquisa/${searchId}`);
-    return { status: "ok", resultado };
   } catch (e) {
-    console.error("[enfileirarScores] excecao:", e);
+    console.error("[reprocessarPendentes] excecao:", e);
     return {
       status: "erro",
-      mensagem: "Erro inesperado ao enfileirar os scores. Veja o terminal do servidor.",
+      mensagem: "Erro ao reagendar o processamento. Veja o log do servidor.",
     };
   }
 }

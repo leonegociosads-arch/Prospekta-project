@@ -3,8 +3,6 @@
 // funcoes async - constantes/objetos como os ESTADO_*_INICIAL quebram o build.
 
 import type { ResumoDescoberta } from "@/lib/descoberta/executar";
-import type { ResultadoEnfileirar } from "@/lib/analise-site/enfileirar";
-import type { ResultadoEnfileirarScore } from "@/lib/score/enfileirar";
 import type { ResultadoEnfileirarDiagnostico } from "@/lib/ia/enfileirar";
 
 export type EstadoDescoberta =
@@ -14,19 +12,12 @@ export type EstadoDescoberta =
 
 export const ESTADO_DESCOBERTA_INICIAL: EstadoDescoberta = { status: "idle" };
 
-export type EstadoEnfileirar =
+export type EstadoReprocessar =
   | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnfileirar }
+  | { status: "ok"; enfileirados: number }
   | { status: "erro"; mensagem: string };
 
-export const ESTADO_ENFILEIRAR_INICIAL: EstadoEnfileirar = { status: "idle" };
-
-export type EstadoEnfileirarScore =
-  | { status: "idle" }
-  | { status: "ok"; resultado: ResultadoEnfileirarScore }
-  | { status: "erro"; mensagem: string };
-
-export const ESTADO_ENFILEIRAR_SCORE_INICIAL: EstadoEnfileirarScore = { status: "idle" };
+export const ESTADO_REPROCESSAR_INICIAL: EstadoReprocessar = { status: "idle" };
 
 export type EstadoEnfileirarDiagnostico =
   | { status: "idle" }

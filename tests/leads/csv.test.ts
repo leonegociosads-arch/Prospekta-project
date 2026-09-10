@@ -21,7 +21,12 @@ function lead(over: Partial<LeadEnriquecido>): LeadEnriquecido {
     criado_em: "2026-01-01T00:00:00.000Z",
     score: null,
     siteAnalisado: false,
+    siteSituacao: "sem-site",
+    temWhatsapp: null,
     temSinalAnuncio: null,
+    vereditoAnuncio: null,
+    temRedeSocial: false,
+    socialAnalisado: false,
     temDiagnostico: false,
     ...over,
   };

@@ -5,10 +5,10 @@ import type { Search } from "@/lib/db-types";
 import { carregarConfigIa } from "@/lib/ia/config-ia";
 import { carregarLeadsDaPesquisa } from "@/lib/leads/consulta";
 import { ordenarLeads } from "@/lib/leads/filtros";
+import { calcularProgressoPesquisa } from "@/lib/leads/progresso";
 import { Aviso } from "@/components/ui";
 import { RodarDescoberta } from "./rodar-descoberta";
-import { AnalisarSites } from "./analisar-sites";
-import { CalcularScores } from "./calcular-scores";
+import { Progresso } from "./progresso";
 import { GerarDiagnosticos } from "./gerar-diagnosticos";
 import { LeadsTabela } from "./leads-tabela";
 
@@ -38,13 +38,19 @@ export default async function PesquisaPage({
   const leads = await carregarLeadsDaPesquisa(supabase, id);
   const ids = leads.map((l) => l.id);
 
-  // uma unica consulta para o "na fila" dos tres paineis
-  const naFila = { analisar_site: 0, calcular_score: 0, diagnosticar_ia: 0 };
+  // uma unica consulta para as tarefas abertas (fila do worker)
+  const naFila = {
+    analisar_site: 0,
+    calcular_score: 0,
+    analisar_social: 0,
+    detectar_ads: 0,
+    diagnosticar_ia: 0,
+  };
   if (ids.length > 0) {
     const { data: jobs } = await supabase
       .from("jobs")
       .select("tipo")
-      .in("tipo", ["analisar_site", "calcular_score", "diagnosticar_ia"])
+      .in("tipo", Object.keys(naFila))
       .in("status", ["pendente", "rodando"])
       .in("lead_id", ids);
     for (const j of jobs ?? []) {
@@ -53,9 +59,9 @@ export default async function PesquisaPage({
     }
   }
 
-  const comSite = leads.filter((l) => (l.site_url ?? "").trim() !== "").length;
-  const sitesAnalisados = leads.filter((l) => l.siteAnalisado).length;
-  const comScore = leads.filter((l) => l.score != null).length;
+  const filaProcessamento =
+    naFila.analisar_site + naFila.calcular_score + naFila.analisar_social + naFila.detectar_ads;
+  const progresso = calcularProgressoPesquisa(leads, filaProcessamento);
 
   // elegiveis ao diagnostico: score >= limite OU entre os topN da pesquisa
   const cfgIa = carregarConfigIa();
@@ -100,14 +106,7 @@ export default async function PesquisaPage({
 
       {leads.length > 0 && (
         <>
-          <AnalisarSites
-            searchId={id}
-            progresso={{ comSite, analisados: sitesAnalisados, naFila: naFila.analisar_site }}
-          />
-          <CalcularScores
-            searchId={id}
-            progresso={{ total: leads.length, comScore, naFila: naFila.calcular_score }}
-          />
+          <Progresso searchId={id} progresso={progresso} />
           <GerarDiagnosticos
             searchId={id}
             progresso={{
