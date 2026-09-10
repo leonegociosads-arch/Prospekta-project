@@ -35,6 +35,16 @@ export type EstadoProcessarLead =
 
 export const ESTADO_PROCESSAR_LEAD_INICIAL: EstadoProcessarLead = { status: "idle" };
 
+/** Acao em lote na tabela: aplicar a varios leads de uma vez. */
+export type AcaoEmLote = "reprocessar" | "diagnostico";
+
+export type EstadoLote =
+  | { status: "idle" }
+  | { status: "ok"; enfileirados: number; leads: number }
+  | { status: "erro"; mensagem: string };
+
+export const ESTADO_LOTE_INICIAL: EstadoLote = { status: "idle" };
+
 export type EstadoEnfileirarDiagnostico =
   | { status: "idle" }
   | { status: "ok"; resultado: ResultadoEnfileirarDiagnostico }

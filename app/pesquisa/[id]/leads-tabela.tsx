@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { LeadEnriquecido, SiteSituacao } from "@/lib/leads/tipos";
 import {
   aplicarCriterios,
@@ -14,9 +15,14 @@ import {
 import { EstadoVazio, SeloScore } from "@/components/ui";
 import { Favoritar } from "@/app/lead/[id]/favoritar";
 import { CardLead } from "./card-lead";
+import { processarLeadsEmLoteAction } from "./actions";
+import type { AcaoEmLote } from "./estado";
 
 const selectCls =
   "rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400";
+
+/** custo estimado por lead do diagnostico com IA (so para avisar o usuario) */
+const CUSTO_IA_POR_LEAD = 0.01;
 
 const SITE_LABEL: Record<SiteSituacao, { texto: string; cls: string }> = {
   ok: { texto: "site ok", cls: "text-emerald-600 dark:text-emerald-400" },
@@ -40,13 +46,80 @@ export function LeadsTabela({
   searchId: string;
   leads: LeadEnriquecido[];
 }) {
+  const router = useRouter();
   const [criterios, setCriterios] = useState<CriteriosLeads>(CRITERIOS_PADRAO);
   const [aberto, setAberto] = useState<LeadEnriquecido | null>(null);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [loteMsg, setLoteMsg] = useState<{ tom: "ok" | "erro"; texto: string } | null>(null);
+  const [pending, startTransition] = useTransition();
+  const cabecalhoRef = useRef<HTMLInputElement>(null);
+
   const set = <K extends keyof CriteriosLeads>(k: K, v: CriteriosLeads[K]) =>
     setCriterios((c) => ({ ...c, [k]: v }));
 
   const visiveis = useMemo(() => aplicarCriterios(leads, criterios), [leads, criterios]);
   const ativos = contarFiltrosAtivos(criterios);
+
+  const marcadosVisiveis = visiveis.filter((l) => selecionados.has(l.id));
+  const todosMarcados = visiveis.length > 0 && marcadosVisiveis.length === visiveis.length;
+  const algunsMarcados = marcadosVisiveis.length > 0 && !todosMarcados;
+
+  // checkbox "marcar todos" no estado "traço" (indeterminado)
+  useEffect(() => {
+    if (cabecalhoRef.current) cabecalhoRef.current.indeterminate = algunsMarcados;
+  }, [algunsMarcados]);
+
+  function alternarLinha(id: string) {
+    setSelecionados((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+    setLoteMsg(null);
+  }
+
+  function alternarTodos() {
+    setSelecionados((s) => {
+      const n = new Set(s);
+      if (todosMarcados) visiveis.forEach((l) => n.delete(l.id));
+      else visiveis.forEach((l) => n.add(l.id));
+      return n;
+    });
+    setLoteMsg(null);
+  }
+
+  function limparSelecao() {
+    setSelecionados(new Set());
+    setLoteMsg(null);
+  }
+
+  function rodarLote(acao: AcaoEmLote) {
+    const ids = [...selecionados];
+    if (acao === "diagnostico") {
+      const custo = (ids.length * CUSTO_IA_POR_LEAD).toFixed(2);
+      if (!window.confirm(`Gerar diagnóstico com IA para ${ids.length} lead(s)? Custo estimado: US$ ${custo}.`)) {
+        return;
+      }
+    }
+    setLoteMsg(null);
+    startTransition(async () => {
+      const r = await processarLeadsEmLoteAction(ids, acao);
+      if (r.status !== "ok") {
+        setLoteMsg({
+          tom: "erro",
+          texto: r.status === "erro" ? r.mensagem : "Não foi possível agendar as tarefas.",
+        });
+        return;
+      }
+      setSelecionados(new Set());
+      setLoteMsg({
+        tom: "ok",
+        texto: `${r.enfileirados} tarefa(s) agendada(s) para ${r.leads} lead(s). O worker vai processar.`,
+      });
+      router.refresh();
+    });
+  }
 
   if (leads.length === 0) {
     return (
@@ -150,6 +223,49 @@ export function LeadsTabela({
         )}
       </div>
 
+      {/* Barra de ações em lote */}
+      {selecionados.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900">
+          <span className="font-medium">{selecionados.size} selecionado(s)</span>
+          <button
+            type="button"
+            onClick={() => rodarLote("reprocessar")}
+            disabled={pending}
+            className="rounded-md border border-zinc-300 px-2.5 py-1 font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            Reprocessar
+          </button>
+          <button
+            type="button"
+            onClick={() => rodarLote("diagnostico")}
+            disabled={pending}
+            className="rounded-md bg-zinc-900 px-2.5 py-1 font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          >
+            Diagnóstico IA ({selecionados.size}) · ≈ US$ {(selecionados.size * CUSTO_IA_POR_LEAD).toFixed(2)}
+          </button>
+          <button
+            type="button"
+            onClick={limparSelecao}
+            className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            limpar
+          </button>
+          {pending && <span className="text-zinc-400">agendando…</span>}
+        </div>
+      )}
+
+      {loteMsg && (
+        <p
+          className={`rounded-md px-3 py-2 text-xs ${
+            loteMsg.tom === "ok"
+              ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+              : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
+          }`}
+        >
+          {loteMsg.texto}
+        </p>
+      )}
+
       {visiveis.length === 0 ? (
         <EstadoVazio
           titulo="Nenhum lead com esses filtros"
@@ -166,9 +282,19 @@ export function LeadsTabela({
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[680px] text-left text-sm">
             <thead className="border-b border-zinc-200 text-xs text-zinc-500 dark:border-zinc-800">
               <tr>
+                <th className="w-8 px-2 py-2">
+                  <input
+                    ref={cabecalhoRef}
+                    type="checkbox"
+                    checked={todosMarcados}
+                    onChange={alternarTodos}
+                    aria-label="Marcar todos os leads visíveis"
+                    className="accent-zinc-900 dark:accent-zinc-100"
+                  />
+                </th>
                 <th className="w-8 px-2 py-2" />
                 <th className="px-2 py-2 font-medium">Score</th>
                 <th className="px-3 py-2 font-medium">Empresa</th>
@@ -179,11 +305,23 @@ export function LeadsTabela({
             <tbody>
               {visiveis.map((l) => {
                 const site = SITE_LABEL[l.siteSituacao];
+                const marcado = selecionados.has(l.id);
                 return (
                   <tr
                     key={l.id}
-                    className="border-b border-zinc-100 last:border-0 dark:border-zinc-900"
+                    className={`border-b border-zinc-100 last:border-0 dark:border-zinc-900 ${
+                      marcado ? "bg-zinc-50 dark:bg-zinc-900/60" : ""
+                    }`}
                   >
+                    <td className="px-2 py-2 align-top">
+                      <input
+                        type="checkbox"
+                        checked={marcado}
+                        onChange={() => alternarLinha(l.id)}
+                        aria-label={`Selecionar ${l.nome}`}
+                        className="mt-0.5 accent-zinc-900 dark:accent-zinc-100"
+                      />
+                    </td>
                     <td className="px-2 py-2 align-top">
                       <Favoritar leadId={l.id} inicial={l.favorito} tamanho="sm" />
                     </td>

@@ -13,8 +13,13 @@ import type {
   EstadoReprocessar,
   EstadoProcessarLead,
   SelecaoLead,
+  AcaoEmLote,
+  EstadoLote,
   EstadoEnfileirarDiagnostico,
 } from "./estado";
+
+/** Limite de leads por acao em lote, para nao agendar um caminhao de jobs sem querer. */
+const MAX_LOTE = 20;
 
 export async function rodarDescobertaAction(
   searchId: string,
@@ -104,6 +109,49 @@ export async function processarLeadAction(
   } catch (e) {
     console.error("[processarLead] excecao:", e);
     return { status: "erro", mensagem: "Erro ao agendar a análise. Veja o log do servidor." };
+  }
+}
+
+/**
+ * Acao em lote da tabela: aplica "reprocessar" (analises gratuitas) ou
+ * "diagnostico" (IA, ~US$ 0,01/lead, respeitando teto e cache) aos leads
+ * marcados. So enfileira - o worker processa.
+ */
+export async function processarLeadsEmLoteAction(
+  leadIds: string[],
+  acao: AcaoEmLote,
+): Promise<EstadoLote> {
+  const ids = [...new Set(leadIds)].filter((id) => typeof id === "string" && id.length > 0);
+  if (ids.length === 0) return { status: "erro", mensagem: "Nenhum lead selecionado." };
+  if (ids.length > MAX_LOTE) {
+    return { status: "erro", mensagem: `Selecione no máximo ${MAX_LOTE} leads por vez.` };
+  }
+
+  try {
+    const db = supabaseServer();
+    let enfileirados = 0;
+
+    if (acao === "reprocessar") {
+      const res = await Promise.all([
+        enfileirarAnalisesDeSite(db, { leadIds: ids }),
+        enfileirarScores(db, { leadIds: ids }),
+        enfileirarAnalisesSociais(db, { leadIds: ids }),
+        enfileirarDetecaoAds(db, { leadIds: ids }),
+      ]);
+      enfileirados = res.reduce((s, r) => s + r.enfileirados, 0);
+    } else {
+      // diagnostico: garante o score e pede a IA (sem filtro de elegibilidade)
+      const [score, ia] = await Promise.all([
+        enfileirarScores(db, { leadIds: ids }),
+        enfileirarDiagnosticos(db, { leadIds: ids, forcar: true }),
+      ]);
+      enfileirados = score.enfileirados + ia.enfileirados;
+    }
+
+    return { status: "ok", enfileirados, leads: ids.length };
+  } catch (e) {
+    console.error("[processarLeadsEmLote] excecao:", e);
+    return { status: "erro", mensagem: "Erro ao agendar as tarefas. Veja o log do servidor." };
   }
 }
 
