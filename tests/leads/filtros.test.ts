@@ -30,6 +30,7 @@ function lead(over: Partial<LeadEnriquecido>): LeadEnriquecido {
     temWhatsapp: null,
     temSinalAnuncio: null,
     vereditoAnuncio: null,
+    adsAnalisado: false,
     temRedeSocial: false,
     socialAnalisado: false,
     temDiagnostico: false,

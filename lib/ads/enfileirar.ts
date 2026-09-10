@@ -12,11 +12,29 @@ export type ResultadoEnfileirarAds = {
 
 export async function enfileirarDetecaoAds(
   db: SupabaseClient,
-  opts: { searchId?: string; leadIds?: string[] } = {},
+  opts: { searchId?: string; leadIds?: string[]; semSiteApenas?: boolean } = {},
 ): Promise<ResultadoEnfileirarAds> {
   let ids: string[];
   if (opts.leadIds) {
     ids = [...new Set(opts.leadIds)];
+  } else if (opts.searchId && opts.semSiteApenas) {
+    // Leads SEM site nunca passam pela analise de site, entao nunca teriam
+    // deteccao de anuncio. Aqui agendamos so para eles; os leads COM site
+    // herdam a deteccao do fim do job "analisar_site" (quando os sinais do
+    // proprio site ja existem).
+    const { data, error } = await db
+      .from("search_leads")
+      .select("leads(id, site_url)")
+      .eq("search_id", opts.searchId);
+    if (error) throw new Error(`search_leads: ${error.message}`);
+    ids = (data ?? [])
+      .map((v) => {
+        const b = (v as Record<string, unknown>).leads;
+        return (Array.isArray(b) ? b[0] : b) as { id: string; site_url: string | null } | null;
+      })
+      .filter((l): l is { id: string; site_url: string | null } => l != null)
+      .filter((l) => (l.site_url ?? "").trim() === "")
+      .map((l) => l.id);
   } else if (opts.searchId) {
     const { data, error } = await db
       .from("search_leads")

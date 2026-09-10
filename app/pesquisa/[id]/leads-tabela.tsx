@@ -8,11 +8,9 @@ import {
   contarFiltrosAtivos,
   CRITERIOS_PADRAO,
   type CriteriosLeads,
-  type FaixaScore,
-  type FiltroTriplo,
   type Ordenacao,
 } from "@/lib/leads/filtros";
-import { EstadoVazio, SeloScore } from "@/components/ui";
+import { EstadoVazio, Pastilha, SeloScore } from "@/components/ui";
 import { Favoritar } from "@/app/lead/[id]/favoritar";
 import { CardLead } from "./card-lead";
 import { processarLeadsEmLoteAction } from "./actions";
@@ -24,20 +22,75 @@ const selectCls =
 /** custo estimado por lead do diagnostico com IA (so para avisar o usuario) */
 const CUSTO_IA_POR_LEAD = 0.01;
 
-const SITE_LABEL: Record<SiteSituacao, { texto: string; cls: string }> = {
-  ok: { texto: "site ok", cls: "text-ok" },
-  instavel: { texto: "site instável", cls: "text-warn" },
-  "fora-do-ar": { texto: "site fora do ar", cls: "text-bad" },
-  "nao-analisado": { texto: "site não analisado", cls: "text-faint" },
-  "sem-site": { texto: "sem site", cls: "text-faint" },
+/** ---- coluna "Site": rotulo + tom da pastilha por situacao ---- */
+const SITE_PASTILHA: Record<
+  SiteSituacao,
+  { texto: string; tom: "ok" | "atencao" | "ruim" | "neutro" | "apagado" }
+> = {
+  ok: { texto: "no ar", tom: "ok" },
+  instavel: { texto: "instável", tom: "atencao" },
+  "fora-do-ar": { texto: "fora do ar", tom: "ruim" },
+  "nao-analisado": { texto: "checando…", tom: "apagado" },
+  "sem-site": { texto: "sem site", tom: "neutro" },
 };
 
-function VeredictoAnuncio({ v }: { v: LeadEnriquecido["vereditoAnuncio"] }) {
-  if (v === "forte") return <span className="text-ok">anuncia (forte)</span>;
-  if (v === "alguns") return <span className="text-ok">indícios de anúncio</span>;
-  if (v === "nenhum") return <span className="text-muted">sem indício de anúncio</span>;
-  return null;
+/** ---- coluna "Anúncios": pastilha a partir do veredito + se ja foi checado ----
+ *  Regra de ouro do projeto: nunca afirmamos "não anuncia". O máximo é
+ *  "sem indício", e só quando de fato houve checagem. */
+function anuncioPastilha(l: LeadEnriquecido): { texto: string; tom: "ok" | "atencao" | "neutro" | "apagado" } {
+  if (l.vereditoAnuncio === "forte") return { texto: "anuncia", tom: "ok" };
+  if (l.vereditoAnuncio === "alguns") return { texto: "alguns indícios", tom: "atencao" };
+  if (l.vereditoAnuncio === "nenhum") return { texto: "sem indício", tom: "neutro" };
+  if (l.adsAnalisado) return { texto: "sem dados", tom: "apagado" };
+  return { texto: "checando…", tom: "apagado" };
 }
+
+/** ---- filtros rapidos: cada "pilula" liga/desliga UM criterio ---- */
+type FiltroRapido = {
+  id: string;
+  rotulo: string;
+  ativo: (c: CriteriosLeads) => boolean;
+  ligar: (c: CriteriosLeads) => CriteriosLeads;
+};
+
+const FILTROS_RAPIDOS: FiltroRapido[] = [
+  {
+    id: "alto",
+    rotulo: "Nota alta",
+    ativo: (c) => c.faixaScore === "alto",
+    ligar: (c) => ({ ...c, faixaScore: c.faixaScore === "alto" ? "todos" : "alto" }),
+  },
+  {
+    id: "medio",
+    rotulo: "Nota média",
+    ativo: (c) => c.faixaScore === "medio",
+    ligar: (c) => ({ ...c, faixaScore: c.faixaScore === "medio" ? "todos" : "medio" }),
+  },
+  {
+    id: "anuncia",
+    rotulo: "Anuncia",
+    ativo: (c) => c.anuncio === "com",
+    ligar: (c) => ({ ...c, anuncio: c.anuncio === "com" ? "todos" : "com" }),
+  },
+  {
+    id: "sem-anuncio",
+    rotulo: "Sem indício de anúncio",
+    ativo: (c) => c.anuncio === "sem",
+    ligar: (c) => ({ ...c, anuncio: c.anuncio === "sem" ? "todos" : "sem" }),
+  },
+  {
+    id: "sem-site",
+    rotulo: "Sem site",
+    ativo: (c) => c.site === "sem",
+    ligar: (c) => ({ ...c, site: c.site === "sem" ? "todos" : "sem" }),
+  },
+  {
+    id: "favoritos",
+    rotulo: "Favoritos",
+    ativo: (c) => c.soFavoritos,
+    ligar: (c) => ({ ...c, soFavoritos: !c.soFavoritos }),
+  },
+];
 
 export function LeadsTabela({
   searchId,
@@ -153,52 +206,39 @@ export function LeadsTabela({
         className="w-full rounded-xl border border-line-strong bg-card px-3 py-2 text-sm outline-none focus:border-accent"
       />
 
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={criterios.faixaScore}
-          onChange={(e) => set("faixaScore", e.target.value as FaixaScore)}
-          className={selectCls}
-          aria-label="Filtrar por score"
+      {/* Filtros rápidos: um clique liga/desliga */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setCriterios(CRITERIOS_PADRAO)}
+          aria-pressed={ativos === 0}
+          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            ativos === 0
+              ? "border-accent bg-accent text-white"
+              : "border-line-strong bg-card text-muted hover:bg-soft"
+          }`}
         >
-          <option value="todos">Score: todos</option>
-          <option value="alto">Score ≥ 70</option>
-          <option value="medio">Score 40–69</option>
-          <option value="baixo">Score &lt; 40</option>
-          <option value="sem">Sem score</option>
-        </select>
+          Todos
+        </button>
 
-        <select
-          value={criterios.site}
-          onChange={(e) => set("site", e.target.value as FiltroTriplo)}
-          className={selectCls}
-          aria-label="Filtrar por site"
-        >
-          <option value="todos">Site: todos</option>
-          <option value="com">Com site</option>
-          <option value="sem">Sem site</option>
-        </select>
-
-        <select
-          value={criterios.anuncio}
-          onChange={(e) => set("anuncio", e.target.value as FiltroTriplo)}
-          className={selectCls}
-          aria-label="Filtrar por sinais de anúncio"
-        >
-          <option value="todos">Anúncios: todos</option>
-          <option value="com">Com sinal de anúncio</option>
-          <option value="sem">Sem sinal (site analisado)</option>
-        </select>
-
-        <label className="flex items-center gap-1.5 text-xs text-muted">
-          <input
-            type="checkbox"
-            checked={criterios.soFavoritos}
-            onChange={(e) => set("soFavoritos", e.target.checked)}
-            className="accent-[color:var(--warn)]"
-          />
-          Só favoritos
-        </label>
+        {FILTROS_RAPIDOS.map((f) => {
+          const on = f.ativo(criterios);
+          return (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setCriterios((c) => f.ligar(c))}
+              aria-pressed={on}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                on
+                  ? "border-accent bg-accent text-white"
+                  : "border-line-strong bg-card text-muted hover:bg-soft"
+              }`}
+            >
+              {f.rotulo}
+            </button>
+          );
+        })}
 
         <select
           value={criterios.ordenar}
@@ -211,16 +251,6 @@ export function LeadsTabela({
           <option value="nome">Nome (A–Z)</option>
           <option value="recentes">Mais recentes</option>
         </select>
-
-        {ativos > 0 && (
-          <button
-            type="button"
-            onClick={() => setCriterios(CRITERIOS_PADRAO)}
-            className="text-xs text-muted underline underline-offset-2 hover:text-ink"
-          >
-            limpar filtros ({ativos})
-          </button>
-        )}
       </div>
 
       {/* Barra de ações em lote */}
@@ -257,9 +287,7 @@ export function LeadsTabela({
       {loteMsg && (
         <p
           className={`rounded-xl px-3 py-2 text-xs ${
-            loteMsg.tom === "ok"
-              ? "bg-ok-soft text-ok"
-              : "bg-bad-soft text-bad"
+            loteMsg.tom === "ok" ? "bg-ok-soft text-ok" : "bg-bad-soft text-bad"
           }`}
         >
           {loteMsg.texto}
@@ -282,7 +310,7 @@ export function LeadsTabela({
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-card shadow-card">
-          <table className="w-full min-w-[680px] text-left text-sm">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-line bg-soft text-[11px] font-semibold uppercase tracking-wide text-faint">
               <tr>
                 <th className="w-8 px-2 py-2">
@@ -295,16 +323,18 @@ export function LeadsTabela({
                     className="accent-[color:var(--accent)]"
                   />
                 </th>
-                <th className="w-8 px-2 py-2" />
-                <th className="px-2 py-2 font-medium">Score</th>
+                <th className="w-8 px-1 py-2" />
+                <th className="w-16 px-2 py-2 font-medium">Score</th>
                 <th className="px-3 py-2 font-medium">Empresa</th>
-                <th className="px-3 py-2 font-medium">Contato</th>
-                <th className="px-3 py-2 font-medium">Sinais</th>
+                <th className="w-36 px-3 py-2 font-medium">Anúncios</th>
+                <th className="w-28 px-3 py-2 font-medium">Site</th>
+                <th className="w-24 px-3 py-2 font-medium">Redes</th>
               </tr>
             </thead>
             <tbody>
               {visiveis.map((l) => {
-                const site = SITE_LABEL[l.siteSituacao];
+                const site = SITE_PASTILHA[l.siteSituacao];
+                const anuncio = anuncioPastilha(l);
                 const marcado = selecionados.has(l.id);
                 return (
                   <tr
@@ -313,7 +343,7 @@ export function LeadsTabela({
                       marcado ? "bg-accent-soft" : "hover:bg-soft"
                     }`}
                   >
-                    <td className="px-2 py-2 align-top">
+                    <td className="px-2 py-2.5 align-top">
                       <input
                         type="checkbox"
                         checked={marcado}
@@ -322,13 +352,13 @@ export function LeadsTabela({
                         className="mt-0.5 accent-[color:var(--accent)]"
                       />
                     </td>
-                    <td className="px-2 py-2 align-top">
+                    <td className="px-1 py-2.5 align-top">
                       <Favoritar leadId={l.id} inicial={l.favorito} tamanho="sm" />
                     </td>
-                    <td className="px-2 py-2 align-top">
+                    <td className="px-2 py-2.5 align-top">
                       <SeloScore score={l.score} />
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-3 py-2.5 align-top">
                       <button
                         type="button"
                         onClick={() => setAberto(l)}
@@ -342,60 +372,31 @@ export function LeadsTabela({
                           <span className="ml-1 text-warn">· {l.status_negocio}</span>
                         )}
                       </div>
-                      {l.avaliacao != null && (
-                        <div className="text-xs text-faint tabular-nums">
-                          ★ {l.avaliacao} ({l.qtd_avaliacoes ?? 0})
-                        </div>
-                      )}
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-faint">
+                        {l.avaliacao != null && (
+                          <span className="tabular-nums">
+                            ★ {l.avaliacao} ({l.qtd_avaliacoes ?? 0})
+                          </span>
+                        )}
+                        {l.telefone && <span className="tabular-nums">{l.telefone}</span>}
+                        {l.temDiagnostico && <span className="text-info">diagnóstico de IA</span>}
+                      </div>
                       {l.endereco && <div className="text-xs text-faint">{l.endereco}</div>}
                     </td>
-                    <td className="px-3 py-2 align-top text-xs text-muted">
-                      <div className="flex flex-col gap-0.5">
-                        {l.telefone && <span className="tabular-nums">{l.telefone}</span>}
-                        {l.temWhatsapp === true && (
-                          <span className="text-ok">WhatsApp no site</span>
-                        )}
-                        <span className="flex flex-wrap gap-2">
-                          {(l.site_url ?? "").trim() ? (
-                            <a
-                              href={l.site_url ?? undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline underline-offset-2"
-                            >
-                              site
-                            </a>
-                          ) : null}
-                          {l.instagram_url && (
-                            <a
-                              href={l.instagram_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline underline-offset-2"
-                            >
-                              instagram
-                            </a>
-                          )}
-                          {l.facebook_url && (
-                            <a
-                              href={l.facebook_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline underline-offset-2"
-                            >
-                              facebook
-                            </a>
-                          )}
-                        </span>
-                      </div>
+                    <td className="px-3 py-2.5 align-top">
+                      <Pastilha tom={anuncio.tom}>{anuncio.texto}</Pastilha>
                     </td>
-                    <td className="px-3 py-2 align-top text-xs">
-                      <div className="flex flex-col gap-0.5">
-                        <span className={site.cls}>{site.texto}</span>
-                        <VeredictoAnuncio v={l.vereditoAnuncio} />
-                        {l.temDiagnostico && (
-                          <span className="text-muted">diagnóstico de IA</span>
-                        )}
+                    <td className="px-3 py-2.5 align-top">
+                      <Pastilha tom={site.tom}>{site.texto}</Pastilha>
+                      {l.temWhatsapp === true && (
+                        <div className="mt-1 text-[11px] font-medium text-ok">WhatsApp no site</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 align-top">
+                      <div className="flex gap-1">
+                        <SeloRede on={(l.instagram_url ?? "").trim() !== ""} sigla="IG" titulo="Instagram" url={l.instagram_url} />
+                        <SeloRede on={(l.facebook_url ?? "").trim() !== ""} sigla="FB" titulo="Facebook" url={l.facebook_url} />
+                        <SeloRede on={(l.site_url ?? "").trim() !== ""} sigla="WWW" titulo="Site" url={l.site_url} />
                       </div>
                     </td>
                   </tr>
@@ -406,7 +407,49 @@ export function LeadsTabela({
         </div>
       )}
 
+      <p className="text-[11px] leading-relaxed text-faint">
+        <span className="font-semibold text-muted">Cores:</span>{" "}
+        <span className="text-ok">verde</span> = confirmado ·{" "}
+        <span className="text-warn">amarelo</span> = parcial, olhar melhor ·{" "}
+        <span className="text-bad">vermelho</span> = problema (= oportunidade de venda) ·{" "}
+        cinza = não deu para checar (não é &ldquo;não&rdquo;). Clique no nome para o diagnóstico completo.
+      </p>
+
       {aberto && <CardLead lead={aberto} onClose={() => setAberto(null)} />}
     </div>
+  );
+}
+
+/** Quadradinho de rede social: aceso quando existe o link; abre em nova aba. */
+function SeloRede({
+  on,
+  sigla,
+  titulo,
+  url,
+}: {
+  on: boolean;
+  sigla: string;
+  titulo: string;
+  url: string | null;
+}) {
+  const base =
+    "grid h-5 min-w-[1.75rem] place-items-center rounded-md px-1 text-[9px] font-bold tabular-nums";
+  if (on && url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={`${titulo} (abrir)`}
+        className={`${base} bg-ok-soft text-ok hover:opacity-80`}
+      >
+        {sigla}
+      </a>
+    );
+  }
+  return (
+    <span title={`Sem ${titulo}`} className={`${base} bg-soft text-faint`}>
+      {sigla}
+    </span>
   );
 }

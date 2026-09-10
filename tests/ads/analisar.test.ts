@@ -40,7 +40,7 @@ test("analisar: sem boletim de site -> veredito null", async () => {
   });
   const r = await analisarAds({ db, agora: AGORA }, "L2", { forcar: true });
   assert.equal(r.veredito, null);
-  assert.equal((tabelas.ad_signals[0].evidencias as { resumo: string }).resumo.includes("não foi analisado"), true);
+  assert.equal((tabelas.ad_signals[0].evidencias as { resumo: string }).resumo.includes("Sem dados"), true);
 });
 
 test("analisar: token + Meta 'sim' -> forte/alta e api_usage registrado", async () => {

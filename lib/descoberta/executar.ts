@@ -12,6 +12,7 @@ import { criarFonteGooglePlaces } from "@/lib/sources/google-places";
 import { enfileirarAnalisesDeSite } from "@/lib/analise-site/enfileirar";
 import { enfileirarScores } from "@/lib/score/enfileirar";
 import { enfileirarAnalisesSociais } from "@/lib/analise-social/enfileirar";
+import { enfileirarDetecaoAds } from "@/lib/ads/enfileirar";
 import { resolverRegiao } from "./geocoding";
 import { persistirLead } from "./persistir";
 import { ErroGoogle, mensagemAmigavel } from "./erros";
@@ -117,6 +118,8 @@ export async function executarDescoberta(
     // Etapa 17: assim que os leads existem, agenda o processamento de todos.
     // analisar_site -> o worker encadeia calcular_score e detectar_ads;
     // calcular_score cobre os leads sem site; analisar_social e um job a parte.
+    // Etapa 21: detectar_ads tambem para os leads SEM site (que nao passam pela
+    // analise de site) -> a coluna "Anuncios" deixa de ficar vazia neles.
     // Best-effort: nao faz chamada paga e nao pode derrubar a descoberta.
     if (res.leads.length > 0) {
       try {
@@ -124,6 +127,7 @@ export async function executarDescoberta(
           enfileirarAnalisesDeSite(db, { searchId }),
           enfileirarScores(db, { searchId }),
           enfileirarAnalisesSociais(db, { searchId }),
+          enfileirarDetecaoAds(db, { searchId, semSiteApenas: true }),
         ]);
       } catch (eEnf) {
         console.warn("[descoberta] processamento automatico nao foi agendado:", eEnf);

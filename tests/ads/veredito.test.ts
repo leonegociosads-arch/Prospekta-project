@@ -34,11 +34,12 @@ test("Meta 'sim' -> forte + confianca alta, mesmo sem sinais no site", () => {
   assert.equal(d.confianca, "alta");
 });
 
-test("site nao analisado + Meta desconhecida -> veredito null", () => {
+test("sem sinais de site + Meta desconhecida -> veredito null, sem afirmar que nao anuncia", () => {
   const d = montarVeredito(null, metaDesconhecida);
   assert.equal(d.veredito, null);
   assert.equal(d.confianca, "baixa");
-  assert.match(d.resumo, /não foi analisado/);
+  assert.match(d.resumo, /sem dados/i);
+  assert.match(d.resumo, /NÃO quer dizer/i);
 });
 
 test("site sem nenhum sinal -> 'nenhum' com confianca baixa (nunca afirma nao anuncia)", () => {

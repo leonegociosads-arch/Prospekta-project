@@ -39,6 +39,9 @@ export type LeadEnriquecido = {
   temSinalAnuncio: boolean | null;
   /** veredito de anuncio do modulo ads (forte/alguns/nenhum) ou null */
   vereditoAnuncio: VereditoAnuncioLead;
+  /** true quando o worker ja checou anuncio (ha linha em ad_signals).
+   *  adsAnalisado && vereditoAnuncio === null  => checou e nao teve base ("sem dados") */
+  adsAnalisado: boolean;
   /** true quando ha link de Instagram ou Facebook */
   temRedeSocial: boolean;
   /** true quando a presenca social ja foi verificada pelo worker */

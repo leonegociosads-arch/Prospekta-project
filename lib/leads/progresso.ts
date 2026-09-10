@@ -29,9 +29,10 @@ export function calcularProgressoPesquisa(
     { rotulo: "Site", feito: leads.filter((l) => l.siteAnalisado).length, total: sites },
     { rotulo: "Redes sociais", feito: leads.filter((l) => l.socialAnalisado).length, total },
     {
+      // etapa 21: a deteccao de anuncio agora roda em todo lead (inclusive sem site)
       rotulo: "Indícios de anúncio",
-      feito: leads.filter((l) => l.vereditoAnuncio != null).length,
-      total: sites,
+      feito: leads.filter((l) => l.adsAnalisado).length,
+      total,
     },
   ];
 

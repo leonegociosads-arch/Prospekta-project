@@ -120,6 +120,33 @@ export function Chip({ children, tom = "neutro" }: { children: ReactNode; tom?: 
   return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${cores}`}>{children}</span>;
 }
 
+/** Pastilha de estado: bolinha + rotulo curto. `tom` carrega o significado.
+ *  Usada nas colunas "Anuncios" e "Site" da tabela de leads. */
+export function Pastilha({
+  children,
+  tom = "neutro",
+}: {
+  children: ReactNode;
+  tom?: "ok" | "atencao" | "ruim" | "info" | "neutro" | "apagado";
+}) {
+  const cores: Record<string, string> = {
+    ok: "bg-ok-soft text-ok",
+    atencao: "bg-warn-soft text-warn",
+    ruim: "bg-bad-soft text-bad",
+    info: "bg-info-soft text-info",
+    neutro: "bg-soft text-muted",
+    apagado: "bg-soft text-faint",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ${cores[tom]}`}
+    >
+      <span aria-hidden="true" className="size-1.5 flex-shrink-0 rounded-full bg-current" />
+      {children}
+    </span>
+  );
+}
+
 /** Selo de score com cor por faixa: verde alto, amarelo medio, vermelho baixo. */
 export function SeloScore({ score }: { score: number | null }) {
   if (score == null) return <span className="text-xs text-faint">—</span>;

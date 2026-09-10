@@ -25,6 +25,7 @@ function lead(over: Partial<LeadEnriquecido>): LeadEnriquecido {
     temWhatsapp: null,
     temSinalAnuncio: null,
     vereditoAnuncio: null,
+    adsAnalisado: false,
     temRedeSocial: false,
     socialAnalisado: false,
     temDiagnostico: false,
@@ -47,6 +48,18 @@ test("progresso: total de score conta todos os leads; site conta so quem tem sit
   assert.equal(p.concluido, false);
 });
 
+test("progresso: 'Indícios de anúncio' conta TODOS os leads (roda mesmo sem site)", () => {
+  const leads = [
+    lead({ site_url: "https://a.com", adsAnalisado: true }),
+    lead({ site_url: null, adsAnalisado: true }),
+    lead({ site_url: null, adsAnalisado: false }),
+  ];
+  const anuncio = calcularProgressoPesquisa(leads, 0).etapas.find(
+    (e) => e.rotulo === "Indícios de anúncio",
+  )!;
+  assert.deepEqual([anuncio.feito, anuncio.total], [2, 3]);
+});
+
 test("progresso: concluido so quando fila zerada e nada faltando", () => {
   const leads = [
     lead({
@@ -54,6 +67,7 @@ test("progresso: concluido so quando fila zerada e nada faltando", () => {
       score: 80,
       siteAnalisado: true,
       socialAnalisado: true,
+      adsAnalisado: true,
       vereditoAnuncio: "nenhum",
     }),
   ];
@@ -62,7 +76,7 @@ test("progresso: concluido so quando fila zerada e nada faltando", () => {
 });
 
 test("progresso: sem leads com site -> etapa de site fica com total 0 (nao trava o concluido)", () => {
-  const leads = [lead({ site_url: null, score: 10, socialAnalisado: true })];
+  const leads = [lead({ site_url: null, score: 10, socialAnalisado: true, adsAnalisado: true })];
   const p = calcularProgressoPesquisa(leads, 0);
   const site = p.etapas.find((e) => e.rotulo === "Site")!;
   assert.equal(site.total, 0);

@@ -102,12 +102,12 @@ export async function carregarLeadsDaPesquisa(
 
   // veredito de anuncio do modulo ads (etapa 12)
   const vereditoPorLead = new Map<string, VereditoAnuncioLead>();
+  const adsAnalisados = new Set<string>();
   for (const a of ads ?? []) {
+    const id = a.lead_id as string;
+    adsAnalisados.add(id); // ha linha -> o worker ja checou (mesmo que sem base)
     const v = a.veredito as string | null;
-    vereditoPorLead.set(
-      a.lead_id as string,
-      v === "forte" || v === "alguns" || v === "nenhum" ? v : null,
-    );
+    vereditoPorLead.set(id, v === "forte" || v === "alguns" || v === "nenhum" ? v : null);
   }
 
   // sinal de anuncio (true/false/null) para os filtros: o veredito manda; se nao
@@ -152,6 +152,7 @@ export async function carregarLeadsDaPesquisa(
       temWhatsapp: s ? (s.tem_whatsapp ?? null) : null,
       temSinalAnuncio: sinalAnuncio(l.id),
       vereditoAnuncio: vereditoPorLead.get(l.id) ?? null,
+      adsAnalisado: adsAnalisados.has(l.id),
       temRedeSocial: (l.instagram_url ?? "").trim() !== "" || (l.facebook_url ?? "").trim() !== "",
       socialAnalisado: comSocial.has(l.id),
       temDiagnostico: comDiagnostico.has(l.id),

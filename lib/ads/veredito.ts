@@ -29,13 +29,15 @@ export function montarVeredito(
     evidencias.push(`Meta Ad Library: ${meta.detalhe}`);
   }
 
-  // 2) site nao analisado e Meta nao confirmou -> sem base
+  // 2) sem sinais do site (nao analisado ou lead sem site) e Meta nao confirmou -> sem base
   if (!site) {
     return {
       veredito: null,
       confianca: "baixa",
       evidencias,
-      resumo: "Sem base para opinar: o site do lead ainda não foi analisado.",
+      resumo:
+        "Sem dados para opinar: não há sinais de site para checar e a Meta Ad Library " +
+        "não confirmou anúncios. Isso NÃO quer dizer que a empresa não anuncia.",
     };
   }
 
