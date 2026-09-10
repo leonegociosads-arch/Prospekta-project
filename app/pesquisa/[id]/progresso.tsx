@@ -38,11 +38,14 @@ export function Progresso({
   }, [progresso.naFila, autoParou, router]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">Processamento dos leads</p>
-          <p className="text-xs text-zinc-500">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-accent-soft text-sm">⚙️</span>
+            Processamento dos leads
+          </p>
+          <p className="mt-1 text-xs text-muted">
             {progresso.concluido ? (
               "Tudo processado."
             ) : progresso.naFila > 0 ? (
@@ -60,7 +63,7 @@ export function Progresso({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium hover:bg-soft disabled:opacity-60"
             >
               {pending ? "Reagendando…" : "Reprocessar pendentes"}
             </button>
@@ -73,14 +76,14 @@ export function Progresso({
           const pct = e.total === 0 ? 100 : Math.round((e.feito / e.total) * 100);
           return (
             <li key={e.rotulo} className="flex items-center gap-3 text-xs">
-              <span className="w-32 shrink-0 text-zinc-600 dark:text-zinc-300">{e.rotulo}</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+              <span className="w-32 shrink-0 text-muted">{e.rotulo}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-soft">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  className="h-full rounded-full bg-accent transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <span className="w-12 shrink-0 text-right tabular-nums text-zinc-500">
+              <span className="w-12 shrink-0 text-right tabular-nums text-muted">
                 {e.total === 0 ? "—" : `${e.feito}/${e.total}`}
               </span>
             </li>
@@ -89,7 +92,7 @@ export function Progresso({
       </ul>
 
       {progresso.naFila > 0 && !autoParou && (
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-faint">
           Esta página se atualiza sozinha enquanto há tarefas na fila.
         </p>
       )}
@@ -101,19 +104,19 @@ export function Progresso({
             contador.current = 0;
             router.refresh();
           }}
-          className="self-start text-xs text-zinc-500 underline underline-offset-2"
+          className="self-start text-xs text-muted underline underline-offset-2"
         >
           Retomar atualização automática
         </button>
       )}
 
       {estado.status === "erro" && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
           {estado.mensagem}
         </p>
       )}
       {estado.status === "ok" && (
-        <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <p className="rounded-xl bg-ok-soft px-3 py-2 text-xs text-ok">
           {estado.enfileirados} tarefa(s) reagendada(s).
         </p>
       )}

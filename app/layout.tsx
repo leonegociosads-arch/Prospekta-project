@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
+const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Prospekta",
@@ -22,28 +16,38 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${figtree.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <header className="border-b border-zinc-200 dark:border-zinc-800">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <Link href="/" className="font-mono text-sm font-semibold tracking-tight">
-              prospekta<span className="text-amber-600">.</span>
+      <body className="flex min-h-full flex-col">
+        <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur">
+          <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-3 sm:px-6">
+            <Link href="/" className="flex items-center gap-2 font-display text-[15px] font-bold tracking-tight">
+              <span
+                aria-hidden="true"
+                className="grid size-7 place-items-center rounded-[9px] bg-accent text-white shadow-sm"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="size-4">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" />
+                </svg>
+              </span>
+              Prospekta
             </Link>
-            <nav className="flex items-center gap-1.5 text-xs">
+            <nav className="ml-1 flex items-center gap-1 text-[13px]">
               <Link
                 href="/config"
-                className="rounded-md px-2.5 py-1.5 font-medium text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="rounded-full px-3 py-1.5 font-medium text-muted hover:bg-soft hover:text-ink"
               >
                 Config
               </Link>
-              <Link
-                href="/pesquisa/nova"
-                className="rounded-md bg-zinc-900 px-3 py-1.5 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-              >
-                Nova pesquisa
-              </Link>
             </nav>
+            <div className="flex-1" />
+            <Link
+              href="/pesquisa/nova"
+              className="rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-sm hover:bg-accent-press"
+            >
+              Nova pesquisa
+            </Link>
           </div>
         </header>
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>

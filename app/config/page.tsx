@@ -47,7 +47,7 @@ export default async function ConfigPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Configuração</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Só leitura. Os valores vêm do <span className="font-mono">.env.local</span> — reinicie o
           servidor depois de mudar.
         </p>
@@ -56,10 +56,10 @@ export default async function ConfigPage() {
       {error && <Aviso>Não foi possível ler o consumo do mês: {error.message}</Aviso>}
 
       {/* Consumo do mes */}
-      <section className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex items-baseline justify-between">
           <h2 className="text-sm font-medium">Consumo em {nomeMes}</h2>
-          <span className="text-xs text-zinc-500">teto: {g.tetoMensalChamadas} chamadas</span>
+          <span className="text-xs text-muted">teto: {g.tetoMensalChamadas} chamadas</span>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -69,11 +69,11 @@ export default async function ConfigPage() {
         </div>
 
         {uso.porEndpoint.length === 0 ? (
-          <p className="text-xs text-zinc-500">Nenhuma chamada externa neste mês.</p>
+          <p className="text-xs text-muted">Nenhuma chamada externa neste mês.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[380px] text-left text-sm">
-              <thead className="text-xs text-zinc-500">
+              <thead className="text-xs text-muted">
                 <tr>
                   <th className="py-1 font-medium">Serviço</th>
                   <th className="py-1 text-right font-medium">Chamadas</th>
@@ -82,9 +82,9 @@ export default async function ConfigPage() {
               </thead>
               <tbody>
                 {uso.porEndpoint.map((e) => (
-                  <tr key={`${e.provedor}-${e.endpoint}`} className="border-t border-zinc-100 dark:border-zinc-900">
+                  <tr key={`${e.provedor}-${e.endpoint}`} className="border-t border-line">
                     <td className="py-1.5">
-                      <span className="text-zinc-400">{e.provedor}</span> · {rotularEndpoint(e.endpoint)}
+                      <span className="text-faint">{e.provedor}</span> · {rotularEndpoint(e.endpoint)}
                     </td>
                     <td className="py-1.5 text-right font-mono tabular-nums">{e.chamadas}</td>
                     <td className="py-1.5 text-right font-mono tabular-nums">{e.custoUsd.toFixed(5)}</td>
@@ -100,7 +100,7 @@ export default async function ConfigPage() {
         <BlocoView key={b.titulo} bloco={b} />
       ))}
 
-      <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+      <Link href="/" className="text-sm text-muted hover:text-ink">
         &larr; Pesquisas
       </Link>
     </div>
@@ -109,20 +109,20 @@ export default async function ConfigPage() {
 
 function Cartao({ rotulo, valor, sub }: { rotulo: string; valor: string; sub?: string }) {
   return (
-    <div className="rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800">
-      <p className="text-xs text-zinc-500">{rotulo}</p>
+    <div className="rounded-xl border border-line bg-card px-3 py-2">
+      <p className="text-xs text-muted">{rotulo}</p>
       <p className="font-mono text-lg font-semibold tabular-nums">{valor}</p>
-      {sub && <p className="text-xs text-zinc-400">{sub}</p>}
+      {sub && <p className="text-xs text-faint">{sub}</p>}
     </div>
   );
 }
 
 function BlocoView({ bloco }: { bloco: BlocoConfig }) {
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <section className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 shadow-card">
       <h2 className="text-sm font-medium">{bloco.titulo}</h2>
-      {bloco.descricao && <p className="text-xs text-zinc-500">{bloco.descricao}</p>}
-      <dl className="mt-1 flex flex-col divide-y divide-zinc-100 dark:divide-zinc-900">
+      {bloco.descricao && <p className="text-xs text-muted">{bloco.descricao}</p>}
+      <dl className="mt-1 flex flex-col divide-y divide-line">
         {bloco.linhas.map((l) => (
           <LinhaView key={l.rotulo} linha={l} />
         ))}
@@ -135,15 +135,15 @@ function LinhaView({ linha }: { linha: LinhaConfig }) {
   return (
     <div className="flex flex-col gap-0.5 py-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-        <dt className="text-sm text-zinc-700 dark:text-zinc-200">{linha.rotulo}</dt>
+        <dt className="text-sm text-ink">{linha.rotulo}</dt>
         <dd className="font-mono text-sm tabular-nums">{linha.valor}</dd>
       </div>
-      <div className="flex flex-wrap items-center gap-x-3 text-xs text-zinc-400">
+      <div className="flex flex-wrap items-center gap-x-3 text-xs text-faint">
         {linha.envVar && <code>{linha.envVar}</code>}
         {linha.faixa && <span>faixa segura: {linha.faixa}</span>}
       </div>
       {linha.aviso && (
-        <p className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+        <p className="mt-1 rounded-xl bg-warn-soft px-2 py-1 text-xs text-warn">
           {linha.aviso}
         </p>
       )}

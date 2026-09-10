@@ -31,9 +31,9 @@ const POLL_MS = 3000;
 const TICKS_ATE_AVISO = 10; // ~30s sem o worker -> mostra o aviso
 
 function selo(item: ItemResumo | undefined) {
-  if (item === "feito") return <span className="text-emerald-600 dark:text-emerald-400">✓ pronto</span>;
-  if (item === "processando") return <span className="text-amber-600 dark:text-amber-400">processando…</span>;
-  return <span className="text-zinc-400">—</span>;
+  if (item === "feito") return <span className="text-ok">✓ pronto</span>;
+  if (item === "processando") return <span className="text-warn">processando…</span>;
+  return <span className="text-faint">—</span>;
 }
 
 export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: () => void }) {
@@ -125,19 +125,19 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
         role="dialog"
         aria-modal="true"
         aria-label={`Diagnóstico de ${lead.nome}`}
-        className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+        className="w-full max-w-md rounded-xl border border-line bg-card p-5 shadow-pop"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold">{lead.nome}</p>
-            {lead.categoria && <p className="text-xs text-zinc-500">{lead.categoria}</p>}
+            {lead.categoria && <p className="text-xs text-muted">{lead.categoria}</p>}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            className="text-faint hover:text-ink"
           >
             ✕
           </button>
@@ -146,25 +146,25 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
         {/* ---------- SELEÇÃO ---------- */}
         {fase === "selecao" && (
           <>
-            <p className="mb-3 text-xs text-zinc-500">
+            <p className="mb-3 text-xs text-muted">
               Marque o que quer analisar deste comércio.
             </p>
             <ul className="flex flex-col gap-1">
               {ITENS.map((i) => (
                 <li key={i.chave}>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl px-2 py-2 hover:bg-soft">
                     <input
                       type="checkbox"
                       checked={selecao[i.chave]}
                       onChange={() => alternar(i.chave)}
-                      className="mt-0.5 accent-zinc-900 dark:accent-zinc-100"
+                      className="mt-0.5 accent-[color:var(--accent)]"
                     />
                     <span className="flex-1">
                       <span className="flex items-center justify-between gap-2 text-sm">
                         <span className="font-medium">{i.rotulo}</span>
                         <span className="text-xs">{selo(resumo?.itens[i.chave])}</span>
                       </span>
-                      <span className="text-xs text-zinc-500">{i.nota}</span>
+                      <span className="text-xs text-muted">{i.nota}</span>
                     </span>
                   </label>
                 </li>
@@ -172,7 +172,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
             </ul>
 
             {erro && (
-              <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+              <p className="mt-3 rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
                 {erro}
               </p>
             )}
@@ -181,7 +181,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                className="rounded-full border border-line-strong px-3 py-1.5 text-sm font-medium hover:bg-soft"
               >
                 Cancelar
               </button>
@@ -189,7 +189,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
                 type="button"
                 onClick={fazerDiagnostico}
                 disabled={!marcados || pending}
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                className="rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pending ? "Agendando…" : "Fazer diagnóstico"}
               </button>
@@ -201,7 +201,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
         {fase === "processando" && (
           <>
             <div className="flex items-center gap-2 text-sm">
-              <span className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-800 dark:border-zinc-700 dark:border-t-zinc-200" />
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-line-strong border-t-ink" />
               Analisando…
             </div>
             <ul className="mt-3 flex flex-col gap-1.5 text-sm">
@@ -213,7 +213,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
               ))}
             </ul>
             {demorou && (
-              <div className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              <div className="mt-3 rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
                 As tarefas estão na fila. Deixe <span className="font-mono">npm run worker</span>{" "}
                 rodando no seu PC para elas serem processadas.
                 <button
@@ -232,7 +232,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
         {fase === "resumo" && (
           <div className="flex flex-col gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500">Score</span>
+              <span className="text-xs text-muted">Score</span>
               <SeloScore score={resumo?.score ?? lead.score} />
             </div>
 
@@ -249,24 +249,24 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
             </Linha>
 
             {resumo?.diagnostico && !resumo.diagnostico.erro && (
-              <div className="rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
-                <p className="mb-1 text-xs font-medium text-zinc-500">Diagnóstico com IA</p>
+              <div className="rounded-xl border border-line p-3">
+                <p className="mb-1 text-xs font-medium text-muted">Diagnóstico com IA</p>
                 {resumo.diagnostico.resumo && <p>{resumo.diagnostico.resumo}</p>}
                 {resumo.diagnostico.servicoSugerido && (
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-muted">
                     Serviço: {resumo.diagnostico.servicoSugerido}
                   </p>
                 )}
                 {resumo.diagnostico.anguloComercial && (
-                  <p className="text-xs text-zinc-500">Ângulo: {resumo.diagnostico.anguloComercial}</p>
+                  <p className="text-xs text-muted">Ângulo: {resumo.diagnostico.anguloComercial}</p>
                 )}
                 {resumo.diagnostico.confianca && (
-                  <p className="text-xs text-zinc-400">Confiança: {resumo.diagnostico.confianca}</p>
+                  <p className="text-xs text-faint">Confiança: {resumo.diagnostico.confianca}</p>
                 )}
               </div>
             )}
             {resumo?.diagnostico?.erro && (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+              <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
                 O diagnóstico com IA falhou: {resumo.diagnostico.erro}
               </p>
             )}
@@ -274,14 +274,14 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
             <div className="mt-1 flex justify-between gap-2">
               <Link
                 href={`/lead/${lead.id}`}
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                className="rounded-full border border-line-strong px-3 py-1.5 text-sm font-medium hover:bg-soft"
               >
                 Ver página completa
               </Link>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                className="rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-press"
               >
                 Fechar
               </button>
@@ -296,7 +296,7 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
 function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className="text-xs text-zinc-500">{rotulo}</span>
+      <span className="text-xs text-muted">{rotulo}</span>
       <span className="text-right text-sm">{children}</span>
     </div>
   );

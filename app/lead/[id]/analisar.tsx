@@ -24,26 +24,26 @@ export function AnalisarSite({ leadId }: { leadId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Analisando…" : "Analisar agora"}
         </button>
       </form>
 
       {pending && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted">
           Baixando a home do site e checando os sinais&hellip; alguns segundos.
         </p>
       )}
 
       {estado.status === "erro" && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
           {estado.mensagem}
         </p>
       )}
 
       {estado.status === "ok" && (
-        <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <div className="rounded-xl bg-ok-soft px-3 py-2 text-xs text-ok">
           <p>{ROTULOS[estado.resultado.status] ?? estado.resultado.status}</p>
           <button
             type="button"

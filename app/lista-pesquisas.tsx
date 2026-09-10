@@ -36,7 +36,7 @@ export function ListaPesquisas({ pesquisas }: { pesquisas: PesquisaResumo[] }) {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar pesquisa por nicho ou região…"
-          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400"
+          className="w-full rounded-xl border border-line-strong bg-card px-3 py-2 text-sm outline-none focus:border-accent"
         />
       )}
 
@@ -48,17 +48,17 @@ export function ListaPesquisas({ pesquisas }: { pesquisas: PesquisaResumo[] }) {
             <li key={p.id}>
               <Link
                 href={`/pesquisa/${p.id}`}
-                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 px-4 py-3 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-card px-4 py-3 shadow-card transition-colors hover:border-line-strong hover:shadow-pop"
               >
                 <span className="min-w-0">
                   <span className="font-medium">{p.nicho}</span>
-                  <span className="text-zinc-500"> · {p.regiao_texto}</span>
-                  <span className="hidden text-zinc-400 sm:inline"> · {p.raio_km} km</span>
-                  <span className="block text-xs text-zinc-400">
+                  <span className="text-muted"> · {p.regiao_texto}</span>
+                  <span className="hidden text-faint sm:inline"> · {p.raio_km} km</span>
+                  <span className="block text-xs text-faint">
                     {p.totalLeads} {p.totalLeads === 1 ? "lead" : "leads"}
                   </span>
                 </span>
-                <span className="shrink-0 font-mono text-xs text-zinc-400">{p.status}</span>
+                <span className="shrink-0 font-mono text-xs text-faint">{p.status}</span>
               </Link>
             </li>
           ))}

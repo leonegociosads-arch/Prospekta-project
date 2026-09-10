@@ -8,7 +8,7 @@ export default function NovaPesquisaPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Nova pesquisa</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Regiao, nicho e raio. Esta etapa cria e salva a pesquisa e coloca a
           descoberta na fila &mdash; a busca de empresas no Google roda depois.
         </p>
@@ -16,7 +16,7 @@ export default function NovaPesquisaPage() {
 
       <FormNovaPesquisa />
 
-      <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+      <Link href="/" className="text-sm text-muted hover:text-ink">
         &larr; Voltar para as pesquisas
       </Link>
     </div>

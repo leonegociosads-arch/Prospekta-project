@@ -77,15 +77,15 @@ export default async function PesquisaPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+      <Link href="/" className="text-sm text-muted hover:text-ink">
         &larr; Pesquisas
       </Link>
 
       <div>
         <h1 className="text-xl font-semibold tracking-tight">
-          {pesquisa.nicho} <span className="text-zinc-400">em</span> {pesquisa.regiao_texto}
+          {pesquisa.nicho} <span className="text-faint">em</span> {pesquisa.regiao_texto}
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Raio {pesquisa.raio_km} km · limite {pesquisa.limite_leads} leads · status{" "}
           <span className="font-mono">{pesquisa.status}</span>
         </p>
@@ -126,8 +126,8 @@ export default async function PesquisaPage({
 
 function Info({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
-    <div className="rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800">
-      <dt className="text-xs text-zinc-500">{rotulo}</dt>
+    <div className="rounded-xl border border-line bg-card px-3 py-2">
+      <dt className="text-xs text-muted">{rotulo}</dt>
       <dd className="font-mono">{valor}</dd>
     </div>
   );

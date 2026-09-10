@@ -16,20 +16,20 @@ export function RecalcularScore({ leadId }: { leadId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium transition-colors hover:bg-soft disabled:opacity-60"
         >
           {pending ? "Calculando…" : "Recalcular score"}
         </button>
       </form>
 
       {estado.status === "erro" && (
-        <p className="text-xs text-red-600 dark:text-red-400">{estado.mensagem}</p>
+        <p className="text-xs text-bad">{estado.mensagem}</p>
       )}
       {estado.status === "ok" && (
         <button
           type="button"
           onClick={() => router.refresh()}
-          className="text-xs text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+          className="text-xs text-ok underline underline-offset-2"
         >
           Score {estado.total} — atualizar a página
         </button>

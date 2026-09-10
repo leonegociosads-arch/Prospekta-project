@@ -20,11 +20,14 @@ export function GerarDiagnosticos({
   );
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">Diagnóstico comercial (IA)</p>
-          <p className="text-xs text-zinc-500">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-info-soft text-sm">✨</span>
+            Diagnóstico comercial (IA)
+          </p>
+          <p className="mt-1 text-xs text-muted">
             {progresso.comDiagnostico}/{progresso.elegiveis} leads elegíveis com diagnóstico
             {progresso.naFila > 0 ? ` · ${progresso.naFila} na fila` : ""}
           </p>
@@ -33,26 +36,26 @@ export function GerarDiagnosticos({
           <button
             type="submit"
             disabled={pending || progresso.elegiveis === 0}
-            className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Enfileirando…" : "Gerar diagnósticos do topo"}
           </button>
         </form>
       </div>
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-muted">
         Elegível: {progresso.criterio}. Só enfileira — deixe <span className="font-mono">npm run worker</span>{" "}
         rodando. Custo por lead: frações de centavo (Gemini Flash). Teto mensal de gasto configurável.
       </p>
 
       {estado.status === "erro" && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
           {estado.mensagem}
         </p>
       )}
 
       {estado.status === "ok" && (
-        <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <div className="rounded-xl bg-ok-soft px-3 py-2 text-xs text-ok">
           <p>
             {estado.resultado.enfileirados} enfileirado(s) · {estado.resultado.elegiveis} elegíveis ·{" "}
             {estado.resultado.jaDiagnosticados} já feitos · {estado.resultado.jaTinhamJob} já na fila

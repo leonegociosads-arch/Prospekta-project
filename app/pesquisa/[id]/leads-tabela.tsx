@@ -19,23 +19,23 @@ import { processarLeadsEmLoteAction } from "./actions";
 import type { AcaoEmLote } from "./estado";
 
 const selectCls =
-  "rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400";
+  "rounded-xl border border-line-strong bg-card px-2 py-1.5 text-xs outline-none focus:border-accent";
 
 /** custo estimado por lead do diagnostico com IA (so para avisar o usuario) */
 const CUSTO_IA_POR_LEAD = 0.01;
 
 const SITE_LABEL: Record<SiteSituacao, { texto: string; cls: string }> = {
-  ok: { texto: "site ok", cls: "text-emerald-600 dark:text-emerald-400" },
-  instavel: { texto: "site instável", cls: "text-amber-600 dark:text-amber-400" },
-  "fora-do-ar": { texto: "site fora do ar", cls: "text-red-600 dark:text-red-400" },
-  "nao-analisado": { texto: "site não analisado", cls: "text-zinc-400" },
-  "sem-site": { texto: "sem site", cls: "text-zinc-400" },
+  ok: { texto: "site ok", cls: "text-ok" },
+  instavel: { texto: "site instável", cls: "text-warn" },
+  "fora-do-ar": { texto: "site fora do ar", cls: "text-bad" },
+  "nao-analisado": { texto: "site não analisado", cls: "text-faint" },
+  "sem-site": { texto: "sem site", cls: "text-faint" },
 };
 
 function VeredictoAnuncio({ v }: { v: LeadEnriquecido["vereditoAnuncio"] }) {
-  if (v === "forte") return <span className="text-emerald-600 dark:text-emerald-400">anuncia (forte)</span>;
-  if (v === "alguns") return <span className="text-emerald-600 dark:text-emerald-400">indícios de anúncio</span>;
-  if (v === "nenhum") return <span className="text-zinc-500">sem indício de anúncio</span>;
+  if (v === "forte") return <span className="text-ok">anuncia (forte)</span>;
+  if (v === "alguns") return <span className="text-ok">indícios de anúncio</span>;
+  if (v === "nenhum") return <span className="text-muted">sem indício de anúncio</span>;
   return null;
 }
 
@@ -134,11 +134,11 @@ export function LeadsTabela({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">
-          Leads <span className="text-zinc-400">({visiveis.length}/{leads.length})</span>
+          Leads <span className="text-faint">({visiveis.length}/{leads.length})</span>
         </h2>
         <a
           href={`/pesquisa/${searchId}/export`}
-          className="rounded-md border border-zinc-300 px-2.5 py-1.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="rounded-full border border-line-strong px-2.5 py-1.5 text-xs font-medium hover:bg-soft"
         >
           Exportar CSV
         </a>
@@ -150,7 +150,7 @@ export function LeadsTabela({
         value={criterios.busca}
         onChange={(e) => set("busca", e.target.value)}
         placeholder="Buscar por nome, categoria, endereço, telefone…"
-        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400"
+        className="w-full rounded-xl border border-line-strong bg-card px-3 py-2 text-sm outline-none focus:border-accent"
       />
 
       {/* Filtros */}
@@ -190,12 +190,12 @@ export function LeadsTabela({
           <option value="sem">Sem sinal (site analisado)</option>
         </select>
 
-        <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-300">
+        <label className="flex items-center gap-1.5 text-xs text-muted">
           <input
             type="checkbox"
             checked={criterios.soFavoritos}
             onChange={(e) => set("soFavoritos", e.target.checked)}
-            className="accent-amber-500"
+            className="accent-[color:var(--warn)]"
           />
           Só favoritos
         </label>
@@ -216,7 +216,7 @@ export function LeadsTabela({
           <button
             type="button"
             onClick={() => setCriterios(CRITERIOS_PADRAO)}
-            className="text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="text-xs text-muted underline underline-offset-2 hover:text-ink"
           >
             limpar filtros ({ativos})
           </button>
@@ -225,13 +225,13 @@ export function LeadsTabela({
 
       {/* Barra de ações em lote */}
       {selecionados.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-accent-soft px-3 py-2 text-xs text-accent-ink">
           <span className="font-medium">{selecionados.size} selecionado(s)</span>
           <button
             type="button"
             onClick={() => rodarLote("reprocessar")}
             disabled={pending}
-            className="rounded-md border border-zinc-300 px-2.5 py-1 font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
+            className="rounded-full border border-line-strong px-2.5 py-1 font-medium hover:bg-soft disabled:opacity-60"
           >
             Reprocessar
           </button>
@@ -239,27 +239,27 @@ export function LeadsTabela({
             type="button"
             onClick={() => rodarLote("diagnostico")}
             disabled={pending}
-            className="rounded-md bg-zinc-900 px-2.5 py-1 font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-full bg-accent px-2.5 py-1 font-medium text-white hover:bg-accent-press disabled:opacity-60"
           >
             Diagnóstico IA ({selecionados.size}) · ≈ US$ {(selecionados.size * CUSTO_IA_POR_LEAD).toFixed(2)}
           </button>
           <button
             type="button"
             onClick={limparSelecao}
-            className="text-zinc-500 underline underline-offset-2 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="text-muted underline underline-offset-2 hover:text-ink"
           >
             limpar
           </button>
-          {pending && <span className="text-zinc-400">agendando…</span>}
+          {pending && <span className="text-faint">agendando…</span>}
         </div>
       )}
 
       {loteMsg && (
         <p
-          className={`rounded-md px-3 py-2 text-xs ${
+          className={`rounded-xl px-3 py-2 text-xs ${
             loteMsg.tom === "ok"
-              ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-              : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
+              ? "bg-ok-soft text-ok"
+              : "bg-bad-soft text-bad"
           }`}
         >
           {loteMsg.texto}
@@ -274,16 +274,16 @@ export function LeadsTabela({
             <button
               type="button"
               onClick={() => setCriterios(CRITERIOS_PADRAO)}
-              className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium hover:bg-soft"
             >
               Limpar filtros
             </button>
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-line bg-card shadow-card">
           <table className="w-full min-w-[680px] text-left text-sm">
-            <thead className="border-b border-zinc-200 text-xs text-zinc-500 dark:border-zinc-800">
+            <thead className="border-b border-line bg-soft text-[11px] font-semibold uppercase tracking-wide text-faint">
               <tr>
                 <th className="w-8 px-2 py-2">
                   <input
@@ -292,7 +292,7 @@ export function LeadsTabela({
                     checked={todosMarcados}
                     onChange={alternarTodos}
                     aria-label="Marcar todos os leads visíveis"
-                    className="accent-zinc-900 dark:accent-zinc-100"
+                    className="accent-[color:var(--accent)]"
                   />
                 </th>
                 <th className="w-8 px-2 py-2" />
@@ -309,8 +309,8 @@ export function LeadsTabela({
                 return (
                   <tr
                     key={l.id}
-                    className={`border-b border-zinc-100 last:border-0 dark:border-zinc-900 ${
-                      marcado ? "bg-zinc-50 dark:bg-zinc-900/60" : ""
+                    className={`border-b border-line last:border-0 ${
+                      marcado ? "bg-accent-soft" : "hover:bg-soft"
                     }`}
                   >
                     <td className="px-2 py-2 align-top">
@@ -319,7 +319,7 @@ export function LeadsTabela({
                         checked={marcado}
                         onChange={() => alternarLinha(l.id)}
                         aria-label={`Selecionar ${l.nome}`}
-                        className="mt-0.5 accent-zinc-900 dark:accent-zinc-100"
+                        className="mt-0.5 accent-[color:var(--accent)]"
                       />
                     </td>
                     <td className="px-2 py-2 align-top">
@@ -336,24 +336,24 @@ export function LeadsTabela({
                       >
                         {l.nome}
                       </button>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-muted">
                         {l.categoria ?? "—"}
                         {l.status_negocio && l.status_negocio !== "OPERATIONAL" && (
-                          <span className="ml-1 text-amber-600">· {l.status_negocio}</span>
+                          <span className="ml-1 text-warn">· {l.status_negocio}</span>
                         )}
                       </div>
                       {l.avaliacao != null && (
-                        <div className="text-xs text-zinc-400 tabular-nums">
+                        <div className="text-xs text-faint tabular-nums">
                           ★ {l.avaliacao} ({l.qtd_avaliacoes ?? 0})
                         </div>
                       )}
-                      {l.endereco && <div className="text-xs text-zinc-400">{l.endereco}</div>}
+                      {l.endereco && <div className="text-xs text-faint">{l.endereco}</div>}
                     </td>
-                    <td className="px-3 py-2 align-top text-xs text-zinc-500">
+                    <td className="px-3 py-2 align-top text-xs text-muted">
                       <div className="flex flex-col gap-0.5">
                         {l.telefone && <span className="tabular-nums">{l.telefone}</span>}
                         {l.temWhatsapp === true && (
-                          <span className="text-emerald-600 dark:text-emerald-400">WhatsApp no site</span>
+                          <span className="text-ok">WhatsApp no site</span>
                         )}
                         <span className="flex flex-wrap gap-2">
                           {(l.site_url ?? "").trim() ? (
@@ -394,7 +394,7 @@ export function LeadsTabela({
                         <span className={site.cls}>{site.texto}</span>
                         <VeredictoAnuncio v={l.vereditoAnuncio} />
                         {l.temDiagnostico && (
-                          <span className="text-zinc-500">diagnóstico de IA</span>
+                          <span className="text-muted">diagnóstico de IA</span>
                         )}
                       </div>
                     </td>

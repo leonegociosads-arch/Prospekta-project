@@ -61,7 +61,7 @@ export default async function Home() {
       <section className="flex flex-col gap-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Pesquisas</h1>
-          <p className="text-sm text-zinc-500">Cada pesquisa é uma busca por um nicho numa região.</p>
+          <p className="text-sm text-muted">Cada pesquisa é uma busca por um nicho numa região.</p>
         </div>
 
         {error && <Aviso>Erro ao ler o banco: {error.message}</Aviso>}
@@ -73,7 +73,7 @@ export default async function Home() {
             acao={
               <Link
                 href="/pesquisa/nova"
-                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-press"
               >
                 Criar a primeira
               </Link>
@@ -87,20 +87,20 @@ export default async function Home() {
       {favoritos.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold">
-            Favoritos <span className="text-zinc-400">({favoritos.length})</span>
+            Favoritos <span className="text-faint">({favoritos.length})</span>
           </h2>
           <ul className="flex flex-col gap-2">
             {favoritos.map((l) => (
               <li key={l.id}>
                 <Link
                   href={`/lead/${l.id}`}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 px-4 py-2.5 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                  className="flex items-center gap-3 rounded-2xl border border-line bg-card px-4 py-2.5 shadow-card transition-colors hover:border-line-strong hover:shadow-pop"
                 >
                   <span className="text-amber-500">★</span>
                   <SeloScore score={scoreFav.get(l.id) ?? null} />
                   <span className="min-w-0">
                     <span className="font-medium">{l.nome}</span>
-                    <span className="block text-xs text-zinc-400">{l.categoria ?? "—"}</span>
+                    <span className="block text-xs text-faint">{l.categoria ?? "—"}</span>
                   </span>
                 </Link>
               </li>

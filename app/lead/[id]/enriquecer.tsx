@@ -12,37 +12,37 @@ export function EnriquecerLead({ leadId, temPlaceId }: { leadId: string; temPlac
 
   if (!temPlaceId) {
     return (
-      <p className="text-xs text-zinc-400">Sem Google Place ID — enriquecimento indisponível.</p>
+      <p className="text-xs text-faint">Sem Google Place ID — enriquecimento indisponível.</p>
     );
   }
 
   return (
     <form action={formAction} className="flex flex-col items-end gap-1.5">
-      <label className="flex items-center gap-1.5 text-xs text-zinc-500">
-        <input type="checkbox" name="reviews" disabled={pending} className="accent-zinc-700" />
+      <label className="flex items-center gap-1.5 text-xs text-muted">
+        <input type="checkbox" name="reviews" disabled={pending} className="accent-[color:var(--accent)]" />
         Incluir avaliações recentes (custo maior)
       </label>
       <button
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Enriquecendo…" : "Enriquecer lead"}
       </button>
 
       {pending && (
-        <p className="text-xs text-zinc-500">Consultando o Google Place Details&hellip;</p>
+        <p className="text-xs text-muted">Consultando o Google Place Details&hellip;</p>
       )}
 
       {estado.status === "erro" && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
           {estado.mensagem}
         </p>
       )}
 
       {estado.status === "ok" && (
-        <div className="rounded-md bg-emerald-50 px-3 py-2 text-right text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <div className="rounded-xl bg-ok-soft px-3 py-2 text-right text-xs text-ok">
           {estado.resultado.fonte === "cache" ? (
             <p>Já estava em cache (dentro do TTL) — nenhuma chamada ao Google.</p>
           ) : (

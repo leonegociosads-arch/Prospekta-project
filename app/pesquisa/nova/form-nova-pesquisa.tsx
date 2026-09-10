@@ -8,8 +8,8 @@ import { criarPesquisaAction } from "./actions";
 import { ESTADO_INICIAL, type EstadoForm } from "./estado";
 
 const campoBase =
-  "rounded-md border bg-white px-3 py-2 text-sm outline-none dark:bg-zinc-900 " +
-  "border-zinc-300 focus:border-zinc-500 dark:border-zinc-700 dark:focus:border-zinc-400";
+  "rounded-xl border bg-card px-3 py-2 text-sm outline-none " +
+  "border-line-strong focus:border-accent";
 
 function erroDe(estado: EstadoForm, campo: string): string | undefined {
   return estado.status === "erro-validacao" ? estado.erros[campo as keyof typeof estado.erros] : undefined;
@@ -17,7 +17,7 @@ function erroDe(estado: EstadoForm, campo: string): string | undefined {
 
 function MsgErro({ children }: { children?: string }) {
   if (!children) return null;
-  return <span className="text-xs text-red-600 dark:text-red-400">{children}</span>;
+  return <span className="text-xs text-bad">{children}</span>;
 }
 
 export function FormNovaPesquisa() {
@@ -48,7 +48,7 @@ export function FormNovaPesquisa() {
             aria-invalid={Boolean(erroDe(estado, "regiao"))}
             className={campoBase}
           />
-          <span className="text-xs text-zinc-500">Cidade, ou &ldquo;cidade, UF&rdquo;.</span>
+          <span className="text-xs text-muted">Cidade, ou &ldquo;cidade, UF&rdquo;.</span>
           <MsgErro>{erroDe(estado, "regiao")}</MsgErro>
         </label>
 
@@ -69,7 +69,7 @@ export function FormNovaPesquisa() {
               <option key={n} value={n} />
             ))}
           </datalist>
-          <span className="text-xs text-zinc-500">Texto livre. Ex.: advocacia, lanchonetes, academias.</span>
+          <span className="text-xs text-muted">Texto livre. Ex.: advocacia, lanchonetes, academias.</span>
           <MsgErro>{erroDe(estado, "nicho")}</MsgErro>
         </label>
 
@@ -88,7 +88,7 @@ export function FormNovaPesquisa() {
               aria-invalid={Boolean(erroDe(estado, "raioKm"))}
               className={campoBase}
             />
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-muted">
               Entre {LIMITES.raioMinKm} e {LIMITES.raioMaxKm} km.
             </span>
             <MsgErro>{erroDe(estado, "raioKm")}</MsgErro>
@@ -108,7 +108,7 @@ export function FormNovaPesquisa() {
               aria-invalid={Boolean(erroDe(estado, "limiteLeads"))}
               className={campoBase}
             />
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-muted">
               Maximo {LIMITES.leadsMax} (1 chamada, sem paginacao).
             </span>
             <MsgErro>{erroDe(estado, "limiteLeads")}</MsgErro>
@@ -117,11 +117,11 @@ export function FormNovaPesquisa() {
       </fieldset>
 
       {/* Estimativa ao vivo */}
-      <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
+      <div className="rounded-xl border border-line bg-soft px-4 py-3 text-sm">
         <p>
           Vamos buscar ate <strong>{est.leadsAlvo} empresa{est.leadsAlvo === 1 ? "" : "s"}</strong>.
         </p>
-        <p className="mt-1 text-zinc-500">
+        <p className="mt-1 text-muted">
           Consumo estimado: <strong>{est.chamadasMin} a {est.chamadasMax} chamada{est.chamadasMax === 1 ? "" : "s"}</strong>{" "}
           a Google Places (1 busca + ate 1 geocodificacao se a regiao for nova). Dentro da cota gratuita.
         </p>
@@ -129,17 +129,17 @@ export function FormNovaPesquisa() {
 
       {/* Banners de estado */}
       {estado.status === "erro-supabase" && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-4 py-3 text-sm text-bad">
           {estado.mensagem}
         </p>
       )}
       {estado.status === "erro-validacao" && (
-        <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+        <p className="rounded-xl bg-warn-soft px-4 py-3 text-sm text-warn">
           Confira os campos destacados acima.
         </p>
       )}
       {estado.status === "ok" && (
-        <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+        <p className="rounded-xl bg-ok-soft px-4 py-3 text-sm text-ok">
           Pesquisa criada. Redirecionando&hellip;
         </p>
       )}
@@ -148,7 +148,7 @@ export function FormNovaPesquisa() {
         <button
           type="submit"
           disabled={travado}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Salvando…" : estado.status === "ok" ? "Criada" : "Criar pesquisa"}
         </button>

@@ -34,7 +34,7 @@ export function Favoritar({
       aria-label={favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
       title={favorito ? "Favorito" : "Favoritar"}
       className={`${cls} leading-none transition-opacity disabled:opacity-50 ${
-        favorito ? "text-amber-500" : "text-zinc-300 hover:text-amber-400 dark:text-zinc-600"
+        favorito ? "text-amber-500" : "text-muted hover:text-amber-400"
       }`}
     >
       {favorito ? "★" : "☆"}

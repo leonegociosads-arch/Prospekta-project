@@ -17,16 +17,16 @@ export function GerarDiagnostico({ leadId, temScore }: { leadId: string; temScor
           type="submit"
           disabled={pending || !temScore}
           title={temScore ? undefined : "Calcule o score primeiro"}
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium transition-colors hover:bg-soft disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Consultando IA…" : "Gerar diagnóstico (IA)"}
         </button>
       </form>
 
-      {pending && <p className="text-xs text-zinc-500">Uma chamada ao modelo — custa frações de centavo.</p>}
+      {pending && <p className="text-xs text-muted">Uma chamada ao modelo — custa frações de centavo.</p>}
 
       {estado.status === "erro" && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-xl bg-bad-soft px-3 py-2 text-xs text-bad">
           {estado.mensagem}
         </p>
       )}
@@ -35,7 +35,7 @@ export function GerarDiagnostico({ leadId, temScore }: { leadId: string; temScor
         <button
           type="button"
           onClick={() => router.refresh()}
-          className="text-xs text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+          className="text-xs text-ok underline underline-offset-2"
         >
           {estado.resultado.status === "cache"
             ? "diagnóstico em cache"

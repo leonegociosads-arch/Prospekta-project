@@ -93,7 +93,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         {pesquisas[0] && (
           <Link
             href={`/pesquisa/${pesquisas[0].id}`}
-            className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="text-sm text-muted hover:text-ink"
           >
             &larr; {pesquisas[0].nicho} em {pesquisas[0].regiao_texto}
           </Link>
@@ -102,7 +102,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           <Favoritar leadId={id} inicial={lead.favorito === true} />
           <h1 className="text-xl font-semibold tracking-tight">{lead.nome}</h1>
         </div>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           {lead.categoria ?? "—"}
           {lead.endereco ? ` · ${lead.endereco}` : ""}
         </p>
@@ -112,21 +112,21 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               href={lead.site_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-600 underline underline-offset-2 dark:text-zinc-300"
+              className="text-muted underline underline-offset-2"
             >
               {lead.site_url}
             </a>
           ) : (
-            <span className="text-zinc-400">sem site cadastrado</span>
+            <span className="text-faint">sem site cadastrado</span>
           )}
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Enriquecimento (Google Place Details)</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {lead.enriquecido_em
                 ? `Enriquecido em ${new Date(lead.enriquecido_em).toLocaleString("pt-BR")}`
                 : "Não enriquecido. Roda só sob clique — não é automático."}
@@ -136,7 +136,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {!lead.enriquecido_em ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
             Clique em &ldquo;Enriquecer lead&rdquo; para buscar horários, telefone internacional,
             link do Maps e (opcional) avaliações.
           </p>
@@ -144,7 +144,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           <>
             <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-xs text-zinc-500">Telefone internacional</dt>
+                <dt className="text-xs text-muted">Telefone internacional</dt>
                 <dd className="font-mono">
                   {lead.telefone_internacional ? (
                     <a
@@ -161,14 +161,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-zinc-500">Google Maps</dt>
+                <dt className="text-xs text-muted">Google Maps</dt>
                 <dd>
                   {lead.maps_uri ? (
                     <a
                       href={lead.maps_uri}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-zinc-600 underline underline-offset-2 dark:text-zinc-300"
+                      className="text-muted underline underline-offset-2"
                     >
                       abrir no Maps
                     </a>
@@ -181,8 +181,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
             {Array.isArray(lead.horarios) && lead.horarios.length > 0 && (
               <div>
-                <p className="mb-1 text-xs text-zinc-500">Horário de funcionamento</p>
-                <ul className="text-xs text-zinc-600 dark:text-zinc-300">
+                <p className="mb-1 text-xs text-muted">Horário de funcionamento</p>
+                <ul className="text-xs text-muted">
                   {(lead.horarios as string[]).map((h) => (
                     <li key={h}>{h}</li>
                   ))}
@@ -191,17 +191,17 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             )}
 
             {detalhes && detalhes.reviews.length > 0 && (
-              <div className="flex flex-col gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-900">
-                <p className="text-xs text-zinc-500">
+              <div className="flex flex-col gap-2 border-t border-line pt-3">
+                <p className="text-xs text-muted">
                   Avaliações recentes ({detalhes.reviews.length})
                 </p>
                 {detalhes.reviews.map((r, i) => (
                   <div key={i} className="text-xs">
-                    <p className="text-zinc-500">
+                    <p className="text-muted">
                       <span className="font-mono">{r.nota ?? "—"}★</span> · {r.autor ?? "anônimo"}
                       {r.quando ? ` · ${r.quando}` : ""}
                     </p>
-                    {r.texto && <p className="mt-0.5 text-zinc-600 dark:text-zinc-300">{r.texto}</p>}
+                    {r.texto && <p className="mt-0.5 text-muted">{r.texto}</p>}
                   </div>
                 ))}
               </div>
@@ -210,11 +210,11 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Score de Oportunidade</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {score
                 ? `${score.versao_formula} · calculado em ${new Date(score.calculado_em).toLocaleString("pt-BR")}` +
                   (det.confianca ? ` · confiança ${det.confianca}` : "")
@@ -225,7 +225,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {!score ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
             Clique em &ldquo;Recalcular score&rdquo; (ou rode a análise de site — o score é
             recalculado junto).
           </p>
@@ -233,31 +233,31 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           <>
             <div className="flex items-baseline gap-3">
               <span className="font-mono text-4xl font-semibold tabular-nums">{score.total}</span>
-              <span className="text-xs text-zinc-500">de 100 · quanto vale a pena prospectar</span>
+              <span className="text-xs text-muted">de 100 · quanto vale a pena prospectar</span>
             </div>
 
             <ul className="flex flex-col gap-1.5 text-sm">
               {(det.fatores ?? []).map((f) => (
                 <li key={f.chave} className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-700 dark:text-zinc-200">
+                    <span className="text-ink">
                       <span className="mr-2 inline-block w-6 text-right font-mono font-semibold tabular-nums">
                         {f.pontos}
                       </span>
                       {f.rotulo}
                     </span>
-                    <span className="font-mono text-xs text-zinc-400">
+                    <span className="font-mono text-xs text-faint">
                       /{f.peso}
                       {f.confianca !== "alta" ? ` · conf. ${f.confianca}` : ""}
                     </span>
                   </div>
-                  <p className="ml-8 text-xs text-zinc-500">{f.motivo}</p>
+                  <p className="ml-8 text-xs text-muted">{f.motivo}</p>
                 </li>
               ))}
             </ul>
 
             {(det.moderadores ?? []).some((m) => m.aplicado) && (
-              <div className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              <div className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
                 <p className="font-medium">Ajustes aplicados:</p>
                 <ul className="mt-1 list-disc pl-4">
                   {(det.moderadores ?? [])
@@ -270,16 +270,16 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                 </ul>
               </div>
             )}
-            <p className="text-xs text-zinc-400">Score não usa IA. Fórmula fixa e versionada.</p>
+            <p className="text-xs text-faint">Score não usa IA. Fórmula fixa e versionada.</p>
           </>
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Diagnóstico comercial (IA)</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {diag
                 ? `${diag.modelo} · prompt ${diag.versao_prompt} · ${new Date(
                     diag.atualizado_em ?? diag.criado_em,
@@ -295,42 +295,42 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {!diag ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
             A IA lê os dados já coletados (score, site, enriquecimento, redes) e escreve um resumo
             comercial. Ela não inventa: o que falta fica como &ldquo;não avaliado&rdquo;.
           </p>
         ) : diag.erro ? (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
             {diag.erro}
           </p>
         ) : (
           <>
-            {diag.resumo && <p className="text-sm text-zinc-700 dark:text-zinc-200">{diag.resumo}</p>}
+            {diag.resumo && <p className="text-sm text-ink">{diag.resumo}</p>}
 
             <ListaDiag titulo="Problemas detectados" itens={diag.problemas} />
             <ListaDiag titulo="Oportunidades" itens={diag.oportunidades} />
 
-            <dl className="grid grid-cols-1 gap-2 border-t border-zinc-100 pt-3 text-sm sm:grid-cols-2 dark:border-zinc-900">
+            <dl className="grid grid-cols-1 gap-2 border-t border-line pt-3 text-sm sm:grid-cols-2">
               {diag.servico_sugerido && (
                 <div>
-                  <dt className="text-xs text-zinc-500">Serviço que poderíamos oferecer</dt>
+                  <dt className="text-xs text-muted">Serviço que poderíamos oferecer</dt>
                   <dd>{diag.servico_sugerido}</dd>
                 </div>
               )}
               {(diag.angulo_comercial ?? diag.angulo_de_entrada) && (
                 <div>
-                  <dt className="text-xs text-zinc-500">Melhor ângulo comercial</dt>
+                  <dt className="text-xs text-muted">Melhor ângulo comercial</dt>
                   <dd>{diag.angulo_comercial ?? diag.angulo_de_entrada}</dd>
                 </div>
               )}
             </dl>
 
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               Confiança do diagnóstico: <strong>{diag.confianca ?? "—"}</strong>
             </p>
 
             {Array.isArray(diag.fatos_utilizados) && diag.fatos_utilizados.length > 0 && (
-              <details className="text-xs text-zinc-500">
+              <details className="text-xs text-muted">
                 <summary className="cursor-pointer">
                   Fatos usados ({(diag.fatos_utilizados as string[]).length})
                 </summary>
@@ -342,18 +342,18 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               </details>
             )}
 
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-faint">
               Texto gerado por {diag.modelo}. Baseado só nos dados do Prospekta — confira antes de usar.
             </p>
           </>
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Boletim técnico do site</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {a?.verificado_em
                 ? `Verificado em ${new Date(a.verificado_em).toLocaleString("pt-BR")}`
                 : "Ainda não analisado."}
@@ -363,11 +363,11 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {!a ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-8 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-8 text-center text-xs text-muted">
             Clique em &ldquo;Analisar agora&rdquo; para gerar o boletim.
           </p>
         ) : a.erro && a.site_existe !== true ? (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
             {a.erro}
             {a.tls_erro ? ` (TLS: ${a.tls_erro})` : ""}
           </p>
@@ -391,12 +391,12 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             </ul>
 
             {a.erro && (
-              <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
                 Aviso: {a.erro}
               </p>
             )}
 
-            <dl className="grid grid-cols-2 gap-3 border-t border-zinc-100 pt-3 text-xs sm:grid-cols-4 dark:border-zinc-900">
+            <dl className="grid grid-cols-2 gap-3 border-t border-line pt-3 text-xs sm:grid-cols-4">
               <Dado rotulo="Status HTTP" valor={a.status_http?.toString() ?? "—"} />
               <Dado rotulo="Redirects" valor={a.qtd_redirects?.toString() ?? "—"} />
               <Dado rotulo="Peso da home" valor={a.peso_kb != null ? `${a.peso_kb} kB` : "—"} />
@@ -418,7 +418,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                 {(a.stack as string[]).map((s) => (
                   <span
                     key={s}
-                    className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                    className="rounded-full bg-soft px-2 py-0.5 text-xs text-muted"
                   >
                     {s}
                   </span>
@@ -429,11 +429,11 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Indícios de tráfego pago</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {ads?.verificado_em
                 ? `Verificado em ${new Date(ads.verificado_em).toLocaleString("pt-BR")}`
                 : "Ainda não verificado. Roda junto com a análise de site."}
@@ -443,7 +443,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {!ads ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
             Analise o site do lead — os indícios de anúncio saem em seguida. Ou clique em
             &ldquo;Detectar anúncios&rdquo;.
           </p>
@@ -451,7 +451,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           <>
             <div className="flex items-center gap-2">
               <VeredictoAdsBadge veredito={ads.veredito} />
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted">
                 confiança <strong>{ads.confianca ?? "—"}</strong>
               </span>
             </div>
@@ -463,9 +463,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                 : [];
               return (
                 <>
-                  {ev.resumo && <p className="text-sm text-zinc-700 dark:text-zinc-200">{ev.resumo}</p>}
+                  {ev.resumo && <p className="text-sm text-ink">{ev.resumo}</p>}
                   {itens.length > 0 && (
-                    <ul className="list-disc pl-4 text-xs text-zinc-500">
+                    <ul className="list-disc pl-4 text-xs text-muted">
                       {itens.map((t, i) => (
                         <li key={i}>{t}</li>
                       ))}
@@ -475,7 +475,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               );
             })()}
 
-            <dl className="grid grid-cols-2 gap-3 border-t border-zinc-100 pt-3 text-xs sm:grid-cols-3 dark:border-zinc-900">
+            <dl className="grid grid-cols-2 gap-3 border-t border-line pt-3 text-xs sm:grid-cols-3">
               <Dado
                 rotulo="Meta Ad Library"
                 valor={
@@ -492,7 +492,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               />
             </dl>
 
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-faint">
               &ldquo;Nenhum indício&rdquo; <strong>não</strong> quer dizer que a empresa não anuncia —
               pode anunciar para uma página externa ou só nas redes. Sem IA.
             </p>
@@ -500,11 +500,11 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Presença social (objetiva)</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {sociais.length > 0
                 ? `Verificado em ${new Date(sociais[0].verificado_em).toLocaleString("pt-BR")}`
                 : "Ainda não checado. Complementar — não afeta site nem score."}
@@ -514,7 +514,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {sociais.length === 0 ? (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
             Clique em &ldquo;Analisar redes&rdquo;. Primeiro procuramos os links no site do lead.
           </p>
         ) : (
@@ -523,7 +523,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               const s = sociais.find((x) => x.plataforma === plat);
               return <LinhaSocial key={plat} plataforma={plat} s={s ?? null} />;
             })}
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-faint">
               &ldquo;Não encontrado&rdquo; e &ldquo;desconhecido&rdquo; <strong>não</strong> significam
               que a empresa não tem essa rede. Sem login, sem scraping, sem IA.
             </p>
@@ -546,10 +546,10 @@ function LinhaSocial({
     status === "encontrado" ? "✓" : status === "nao_encontrado" ? "✗" : status === "sem_link" ? "—" : "?";
   const cor =
     status === "encontrado"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-ok"
       : status === "nao_encontrado"
-        ? "text-red-500"
-        : "text-zinc-400";
+        ? "text-bad"
+        : "text-faint";
   const rotuloStatus: Record<string, string> = {
     encontrado: "perfil encontrado",
     nao_encontrado: "não encontrado (404)",
@@ -559,7 +559,7 @@ function LinhaSocial({
   const obj = (s?.objetivo ?? {}) as { bio?: string | null; link_externo?: string | null; origem?: string | null };
 
   return (
-    <div className="border-t border-zinc-100 pt-2 text-sm first:border-0 first:pt-0 dark:border-zinc-900">
+    <div className="border-t border-line pt-2 text-sm first:border-0 first:pt-0">
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium capitalize">{plataforma}</span>
         <span className={`font-mono text-xs font-semibold ${cor}`}>
@@ -571,7 +571,7 @@ function LinhaSocial({
           href={s.perfil_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-zinc-600 underline underline-offset-2 dark:text-zinc-300"
+          className="text-xs text-muted underline underline-offset-2"
         >
           {s.perfil_url}
         </a>
@@ -587,31 +587,31 @@ function LinhaSocial({
           <Dado rotulo="Origem do link" valor={obj.origem === "site" ? "site" : obj.origem === "google_places" ? "Google" : "—"} />
         </dl>
       )}
-      {obj.bio && <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">{obj.bio}</p>}
+      {obj.bio && <p className="mt-1 text-xs text-muted">{obj.bio}</p>}
       {obj.link_externo && (
         <a
           href={obj.link_externo}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-zinc-500 underline underline-offset-2"
+          className="text-xs text-muted underline underline-offset-2"
         >
           link externo: {obj.link_externo}
         </a>
       )}
-      {status !== "encontrado" && s?.erro && <p className="mt-0.5 text-xs text-zinc-400">{s.erro}</p>}
+      {status !== "encontrado" && s?.erro && <p className="mt-0.5 text-xs text-faint">{s.erro}</p>}
     </div>
   );
 }
 
 function VeredictoAdsBadge({ veredito }: { veredito: string | null }) {
   const mapa: Record<string, { txt: string; cls: string }> = {
-    forte: { txt: "sinais fortes", cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" },
-    alguns: { txt: "alguns sinais", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" },
-    nenhum: { txt: "nenhum indício", cls: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400" },
+    forte: { txt: "sinais fortes", cls: "bg-ok-soft text-ok" },
+    alguns: { txt: "alguns sinais", cls: "bg-warn-soft text-warn" },
+    nenhum: { txt: "nenhum indício", cls: "bg-soft text-muted" },
   };
   const m = veredito ? mapa[veredito] : null;
-  if (!m) return <span className="text-xs text-zinc-400">sem veredito</span>;
-  return <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${m.cls}`}>{m.txt}</span>;
+  if (!m) return <span className="text-xs text-faint">sem veredito</span>;
+  return <span className={`rounded-xl px-2 py-0.5 text-xs font-medium ${m.cls}`}>{m.txt}</span>;
 }
 
 function ListaDiag({ titulo, itens }: { titulo: string; itens: unknown }) {
@@ -619,8 +619,8 @@ function ListaDiag({ titulo, itens }: { titulo: string; itens: unknown }) {
   if (lista.length === 0) return null;
   return (
     <div>
-      <p className="mb-1 text-xs text-zinc-500">{titulo}</p>
-      <ul className="list-disc pl-4 text-sm text-zinc-700 dark:text-zinc-200">
+      <p className="mb-1 text-xs text-muted">{titulo}</p>
+      <ul className="list-disc pl-4 text-sm text-ink">
         {lista.map((t, i) => (
           <li key={i}>{t}</li>
         ))}
@@ -633,13 +633,13 @@ function Check({ rotulo, v }: { rotulo: string; v: boolean | null }) {
   const marca = v === true ? "✓" : v === false ? "✗" : "?";
   const cor =
     v === true
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-ok"
       : v === false
-        ? "text-red-500"
-        : "text-zinc-400";
+        ? "text-bad"
+        : "text-faint";
   return (
     <li className="flex items-center justify-between gap-2">
-      <span className="text-zinc-600 dark:text-zinc-300">{rotulo}</span>
+      <span className="text-muted">{rotulo}</span>
       <span className={`font-mono font-semibold ${cor}`}>{marca}</span>
     </li>
   );
@@ -648,7 +648,7 @@ function Check({ rotulo, v }: { rotulo: string; v: boolean | null }) {
 function Dado({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-zinc-500">{rotulo}</dt>
+      <dt className="text-muted">{rotulo}</dt>
       <dd className="truncate font-mono" title={valor}>
         {valor}
       </dd>
