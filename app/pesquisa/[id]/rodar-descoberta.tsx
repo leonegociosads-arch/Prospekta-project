@@ -17,7 +17,7 @@ export function RodarDescoberta({ searchId, jobStatus }: { searchId: string; job
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-accent-soft text-sm">📡</span>
+            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-info-soft text-sm">📡</span>
             Descoberta de empresas
           </p>
           <p className="mt-1 text-xs text-muted">

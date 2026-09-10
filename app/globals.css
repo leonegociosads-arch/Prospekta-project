@@ -7,54 +7,56 @@
    os componentes quase nao precisam de classes `dark:`.                     */
 
 :root {
-  --canvas: #fbfbfd;
+  /* Fundo branco. Cinzas NEUTROS (sem puxar pro roxo). */
+  --canvas: #ffffff;
   --card: #ffffff;
-  --soft: #f2f1f6;
-  --ink: #1f1d2b;
-  --muted: #6b6778;
-  --faint: #9995a6;
-  --line: #e9e7f0;
-  --line-strong: #dcd8e8;
+  --soft: #f4f4f6;
+  --ink: #1b1b1e;
+  --muted: #67676e;
+  --faint: #9a9aa1;
+  --line: #ececee;
+  --line-strong: #dededf;
 
-  --accent: #6a45ec;
-  --accent-press: #5836d6;
-  --accent-soft: #efeafe;
-  --accent-ink: #4a2fc0;
+  /* Roxo: SO no botao, link, barra de progresso e item ativo. */
+  --accent: #6c4bf0;
+  --accent-press: #5a39d8;
+  --accent-soft: #f1edfe;
+  --accent-ink: #4c2fc8;
 
   --ok: #0f9d58;
-  --ok-soft: #e2f4ea;
-  --warn: #b57708;
-  --warn-soft: #faefdb;
-  --bad: #d6403f;
-  --bad-soft: #fbe6e6;
+  --ok-soft: #e6f5ec;
+  --warn: #b06f04;
+  --warn-soft: #fbf0dc;
+  --bad: #d63f3e;
+  --bad-soft: #fce8e8;
   --info: #2f6fed;
-  --info-soft: #e7effd;
+  --info-soft: #e9f0fd;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: #141020;
-    --card: #1c1830;
-    --soft: #262138;
-    --ink: #ece9f6;
-    --muted: #a5a0bb;
-    --faint: #7c7796;
-    --line: #2c2842;
-    --line-strong: #393450;
+    --canvas: #131316;
+    --card: #1c1c20;
+    --soft: #26262b;
+    --ink: #ededf0;
+    --muted: #a1a1aa;
+    --faint: #75757e;
+    --line: #2b2b31;
+    --line-strong: #3a3a42;
 
-    --accent: #977dff;
-    --accent-press: #a892ff;
-    --accent-soft: #29234a;
-    --accent-ink: #cbbdff;
+    --accent: #9b82ff;
+    --accent-press: #ab96ff;
+    --accent-soft: #241f3d;
+    --accent-ink: #cdbfff;
 
     --ok: #46c07d;
-    --ok-soft: #15311e;
-    --warn: #dfa441;
-    --warn-soft: #342610;
+    --ok-soft: #16311f;
+    --warn: #dda23e;
+    --warn-soft: #33270f;
     --bad: #ef6a6a;
     --bad-soft: #371a1b;
     --info: #6a9bff;
-    --info-soft: #16233c;
+    --info-soft: #17233b;
   }
 }
 
