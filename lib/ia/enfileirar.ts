@@ -23,7 +23,14 @@ export type ResultadoEnfileirarDiagnostico = {
 
 export async function enfileirarDiagnosticos(
   db: SupabaseClient,
-  opts: { searchId?: string; leadIds?: string[]; config?: ConfigIa } = {},
+  opts: {
+    searchId?: string;
+    leadIds?: string[];
+    config?: ConfigIa;
+    /** pedido manual (card do lead): ignora o filtro de elegibilidade.
+     *  O teto de gasto e o cache continuam valendo no processamento. */
+    forcar?: boolean;
+  } = {},
 ): Promise<ResultadoEnfileirarDiagnostico> {
   const config = opts.config ?? carregarConfigIa();
 
@@ -66,11 +73,13 @@ export async function enfileirarDiagnosticos(
     for (const id of ordenado) topLeads.add(id);
   }
 
-  const elegiveis = ids.filter((id) => {
-    const total = scorePorLead.get(id);
-    if (total == null) return false;
-    return total >= config.scoreMinimo || topLeads.has(id);
-  });
+  const elegiveis = opts.forcar
+    ? ids
+    : ids.filter((id) => {
+        const total = scorePorLead.get(id);
+        if (total == null) return false;
+        return total >= config.scoreMinimo || topLeads.has(id);
+      });
   if (elegiveis.length === 0) {
     return {
       candidatos: ids.length,

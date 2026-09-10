@@ -19,6 +19,22 @@ export type EstadoReprocessar =
 
 export const ESTADO_REPROCESSAR_INICIAL: EstadoReprocessar = { status: "idle" };
 
+/** O que o card do lead pode pedir para analisar. */
+export type SelecaoLead = {
+  site: boolean;
+  redes: boolean;
+  anuncio: boolean;
+  score: boolean;
+  ia: boolean;
+};
+
+export type EstadoProcessarLead =
+  | { status: "idle" }
+  | { status: "ok"; enfileirados: number }
+  | { status: "erro"; mensagem: string };
+
+export const ESTADO_PROCESSAR_LEAD_INICIAL: EstadoProcessarLead = { status: "idle" };
+
 export type EstadoEnfileirarDiagnostico =
   | { status: "idle" }
   | { status: "ok"; resultado: ResultadoEnfileirarDiagnostico }

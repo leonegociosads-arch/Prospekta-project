@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import type { LeadEnriquecido, SiteSituacao } from "@/lib/leads/tipos";
 import {
   aplicarCriterios,
@@ -14,6 +13,7 @@ import {
 } from "@/lib/leads/filtros";
 import { EstadoVazio, SeloScore } from "@/components/ui";
 import { Favoritar } from "@/app/lead/[id]/favoritar";
+import { CardLead } from "./card-lead";
 
 const selectCls =
   "rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-400";
@@ -41,6 +41,7 @@ export function LeadsTabela({
   leads: LeadEnriquecido[];
 }) {
   const [criterios, setCriterios] = useState<CriteriosLeads>(CRITERIOS_PADRAO);
+  const [aberto, setAberto] = useState<LeadEnriquecido | null>(null);
   const set = <K extends keyof CriteriosLeads>(k: K, v: CriteriosLeads[K]) =>
     setCriterios((c) => ({ ...c, [k]: v }));
 
@@ -190,12 +191,13 @@ export function LeadsTabela({
                       <SeloScore score={l.score} />
                     </td>
                     <td className="px-3 py-2 align-top">
-                      <Link
-                        href={`/lead/${l.id}`}
-                        className="font-medium underline-offset-2 hover:underline"
+                      <button
+                        type="button"
+                        onClick={() => setAberto(l)}
+                        className="text-left font-medium underline-offset-2 hover:underline"
                       >
                         {l.nome}
-                      </Link>
+                      </button>
                       <div className="text-xs text-zinc-500">
                         {l.categoria ?? "—"}
                         {l.status_negocio && l.status_negocio !== "OPERATIONAL" && (
@@ -265,6 +267,8 @@ export function LeadsTabela({
           </table>
         </div>
       )}
+
+      {aberto && <CardLead lead={aberto} onClose={() => setAberto(null)} />}
     </div>
   );
 }

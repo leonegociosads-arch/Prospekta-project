@@ -37,7 +37,19 @@ type SiteRow = {
 /** TTFB (tempo ate o primeiro byte) acima disso conta como site "instavel". */
 const TTFB_LENTO_MS = 2500;
 
-function situacaoDoSite(temUrl: boolean, s: SiteRow | undefined): SiteSituacao {
+/** Situacao resumida do site a partir do boletim. Exportada: o card do lead reusa. */
+export function situacaoDoSite(
+  temUrl: boolean,
+  s:
+    | {
+        site_existe: boolean | null;
+        status_http: number | null;
+        ttfb_ms: number | null;
+        erro: string | null;
+      }
+    | undefined
+    | null,
+): SiteSituacao {
   if (!temUrl) return "sem-site";
   if (!s) return "nao-analisado";
   if (s.erro != null || s.site_existe === false) return "fora-do-ar";

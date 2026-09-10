@@ -13,11 +13,17 @@ export type ResultadoEnfileirar = {
 
 export async function enfileirarAnalisesDeSite(
   db: SupabaseClient,
-  opts: { searchId?: string } = {},
+  opts: { searchId?: string; leadIds?: string[] } = {},
 ): Promise<ResultadoEnfileirar> {
   // 1. leads-alvo
   let leads: Array<{ id: string; site_url: string | null }> = [];
-  if (opts.searchId) {
+  if (opts.leadIds) {
+    const alvo = [...new Set(opts.leadIds)];
+    if (alvo.length === 0) return { candidatos: 0, enfileirados: 0, jaTinhamJob: 0, semSite: 0 };
+    const { data, error } = await db.from("leads").select("id, site_url").in("id", alvo);
+    if (error) throw new Error(`leads: ${error.message}`);
+    leads = data ?? [];
+  } else if (opts.searchId) {
     const { data, error } = await db
       .from("search_leads")
       .select("leads(id, site_url)")

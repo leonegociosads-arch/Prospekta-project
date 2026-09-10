@@ -6,10 +6,13 @@ import { executarDescoberta } from "@/lib/descoberta/executar";
 import { enfileirarAnalisesDeSite } from "@/lib/analise-site/enfileirar";
 import { enfileirarScores } from "@/lib/score/enfileirar";
 import { enfileirarAnalisesSociais } from "@/lib/analise-social/enfileirar";
+import { enfileirarDetecaoAds } from "@/lib/ads/enfileirar";
 import { enfileirarDiagnosticos } from "@/lib/ia/enfileirar";
 import type {
   EstadoDescoberta,
   EstadoReprocessar,
+  EstadoProcessarLead,
+  SelecaoLead,
   EstadoEnfileirarDiagnostico,
 } from "./estado";
 
@@ -69,6 +72,38 @@ export async function reprocessarPendentesAction(
       status: "erro",
       mensagem: "Erro ao reagendar o processamento. Veja o log do servidor.",
     };
+  }
+}
+
+/**
+ * Card do lead: enfileira so o que o usuario marcou, para 1 lead. Nao espera
+ * o processamento - o card acompanha pelo GET /lead/[id]/resumo. So o item de
+ * IA gera custo (respeitando teto e cache); o resto e analise do proprio codigo.
+ */
+export async function processarLeadAction(
+  leadId: string,
+  selecao: SelecaoLead,
+): Promise<EstadoProcessarLead> {
+  const nada =
+    !selecao.site && !selecao.redes && !selecao.anuncio && !selecao.score && !selecao.ia;
+  if (nada) return { status: "erro", mensagem: "Marque ao menos um item." };
+
+  try {
+    const db = supabaseServer();
+    const tarefas: Array<Promise<{ enfileirados: number }>> = [];
+
+    if (selecao.site) tarefas.push(enfileirarAnalisesDeSite(db, { leadIds: [leadId] }));
+    if (selecao.redes) tarefas.push(enfileirarAnalisesSociais(db, { leadIds: [leadId] }));
+    if (selecao.anuncio) tarefas.push(enfileirarDetecaoAds(db, { leadIds: [leadId] }));
+    // a IA precisa do score; garante que ele esta agendado junto
+    if (selecao.score || selecao.ia) tarefas.push(enfileirarScores(db, { leadIds: [leadId] }));
+    if (selecao.ia) tarefas.push(enfileirarDiagnosticos(db, { leadIds: [leadId], forcar: true }));
+
+    const res = await Promise.all(tarefas);
+    return { status: "ok", enfileirados: res.reduce((s, r) => s + r.enfileirados, 0) };
+  } catch (e) {
+    console.error("[processarLead] excecao:", e);
+    return { status: "erro", mensagem: "Erro ao agendar a análise. Veja o log do servidor." };
   }
 }
 
