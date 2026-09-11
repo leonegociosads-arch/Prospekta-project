@@ -19,6 +19,7 @@ import type {
   EstadoFavorito,
   EstadoAds,
   EstadoDiagnostico,
+  EstadoProcessarTudo,
 } from "./estado";
 
 export async function analisarSiteAction(
@@ -161,6 +162,71 @@ export async function detectarAdsAction(
       status: "erro",
       mensagem: "Erro inesperado ao detectar anúncios. Veja o terminal do servidor.",
     };
+  }
+}
+
+/**
+ * Etapa 23: o botao "Fazer diagnóstico completo" da pagina do lead. Roda tudo
+ * num pedido so (sem fila/worker), na ordem que os dados dependem uns dos
+ * outros: site -> score -> redes -> anuncios -> IA. Cada etapa e independente
+ * - se uma falhar, as outras continuam (mesma regra de robustez do worker).
+ */
+export async function processarTudoAction(
+  leadId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState
+  _anterior: EstadoProcessarTudo,
+): Promise<EstadoProcessarTudo> {
+  try {
+    const db = supabaseServer();
+    const { data: lead, error: errLead } = await db
+      .from("leads")
+      .select("site_url")
+      .eq("id", leadId)
+      .maybeSingle();
+    if (errLead) throw new Error(`leads: ${errLead.message}`);
+    if (!lead) return { status: "erro", mensagem: "Lead não encontrado." };
+
+    const temSite = (lead.site_url ?? "").trim() !== "";
+
+    if (temSite) {
+      await analisarSite({ db, apiKey: process.env.GOOGLE_MAPS_API_KEY }, leadId, { forcar: true }).catch(
+        (e) => console.error("[processarTudo] analisarSite falhou:", e),
+      );
+    }
+    await calcularEPersistirScore(db, leadId).catch((e) =>
+      console.error("[processarTudo] calcularScore falhou:", e),
+    );
+    await analisarSocial({ db }, leadId, { forcar: true }).catch((e) =>
+      console.error("[processarTudo] analisarSocial falhou:", e),
+    );
+    await analisarAds({ db }, leadId, { forcar: true }).catch((e) =>
+      console.error("[processarTudo] analisarAds falhou:", e),
+    );
+
+    let avisoIa: string | null = null;
+    try {
+      const r = await diagnosticarLead(
+        { db, apiKey: process.env.GEMINI_API_KEY },
+        leadId,
+        { ignorarElegibilidade: true },
+      );
+      if (r.status === "erro-modelo") avisoIa = r.erro ?? "o modelo não devolveu um diagnóstico aproveitável.";
+    } catch (e) {
+      console.error("[processarTudo] diagnosticarLead falhou:", e);
+      if (e instanceof ErroDeOrcamento) {
+        avisoIa = `IA bloqueada pela guarda de orçamento: ${e.motivo}.`;
+      } else if (e instanceof ErroIa) {
+        avisoIa = `IA: ${mensagemAmigavelIa(e.tipo)}`;
+      } else {
+        avisoIa = "Erro inesperado ao gerar o diagnóstico com IA.";
+      }
+    }
+
+    revalidatePath(`/lead/${leadId}`);
+    return { status: "ok", avisoIa };
+  } catch (e) {
+    console.error("[processarTudo] excecao:", e);
+    return { status: "erro", mensagem: "Erro inesperado ao processar o lead. Veja o terminal do servidor." };
   }
 }
 

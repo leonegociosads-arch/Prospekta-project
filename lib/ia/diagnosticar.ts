@@ -23,7 +23,8 @@ import { montarSystem, montarUser, REFORCO_JSON, PROMPT_VERSAO } from "./prompt"
 import { parseDiagnostico } from "./parse-saida";
 import { avaliarElegibilidade } from "./elegibilidade";
 import { coletarEntradaDiagnostico, marcoMaisRecente } from "./coletar-entrada";
-import type { ConfiancaIa, DiagnosticoIa, ResultadoDiagnostico } from "./tipos";
+import { montarDiagnosticoDaLinha } from "./normalizar-linha";
+import type { DiagnosticoIa, ResultadoDiagnostico } from "./tipos";
 
 const MS_DIA = 86_400_000;
 
@@ -207,11 +208,12 @@ export async function diagnosticarLead(
     linha = {
       ...comum,
       resumo: d.resumo,
-      problemas: d.problemas,
-      oportunidades: d.oportunidades,
-      servico_sugerido: d.servicoSugerido,
-      angulo_comercial: d.anguloComercial,
-      angulo_de_entrada: d.anguloComercial,
+      pontos_fortes: d.pontosFortes,
+      pontos_fracos: d.pontosFracos,
+      proposta: d.proposta,
+      estrategia: d.estrategia,
+      mensagem_inicial: d.mensagemInicial,
+      objecoes: d.objecoes,
       confianca: d.confianca,
       fatos_utilizados: d.fatosUtilizados,
       erro: null,
@@ -221,11 +223,12 @@ export async function diagnosticarLead(
     linha = {
       ...comum,
       resumo: null,
-      problemas: null,
-      oportunidades: null,
-      servico_sugerido: null,
-      angulo_comercial: null,
-      angulo_de_entrada: null,
+      pontos_fortes: null,
+      pontos_fracos: null,
+      proposta: null,
+      estrategia: null,
+      mensagem_inicial: null,
+      objecoes: null,
       confianca: null,
       fatos_utilizados: null,
       erro: erroTxt,
@@ -266,24 +269,9 @@ async function gastoIaNoMesUsd(db: SupabaseClient, agora: Date): Promise<number>
   );
 }
 
-function arr(v: unknown): string[] {
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
-}
-
 function daLinha(leadId: string, row: LinhaDiag): ResultadoDiagnostico {
   const temErro = !!row.erro;
-  const diagnostico: DiagnosticoIa | null = temErro
-    ? null
-    : {
-        resumo: (row.resumo as string) ?? "",
-        problemas: arr(row.problemas),
-        oportunidades: arr(row.oportunidades),
-        servicoSugerido: (row.servico_sugerido as string) ?? "",
-        anguloComercial:
-          (row.angulo_comercial as string) ?? (row.angulo_de_entrada as string) ?? "",
-        confianca: ((row.confianca as ConfiancaIa) ?? "baixa"),
-        fatosUtilizados: arr(row.fatos_utilizados),
-      };
+  const diagnostico: DiagnosticoIa | null = temErro ? null : montarDiagnosticoDaLinha(row);
   return {
     status: "cache",
     leadId,

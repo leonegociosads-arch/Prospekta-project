@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { LeadEnriquecido, SiteSituacao } from "@/lib/leads/tipos";
+import type { LeadEnriquecido } from "@/lib/leads/tipos";
 import {
   aplicarCriterios,
   contarFiltrosAtivos,
@@ -11,6 +11,7 @@ import {
   type Ordenacao,
 } from "@/lib/leads/filtros";
 import { EstadoVazio, Pastilha, SeloScore } from "@/components/ui";
+import { SITE_PASTILHA, pastilhaAnuncio } from "@/lib/leads/apresentacao";
 import { Favoritar } from "@/app/lead/[id]/favoritar";
 import { CardLead } from "./card-lead";
 import { processarLeadsEmLoteAction } from "./actions";
@@ -21,29 +22,6 @@ const selectCls =
 
 /** custo estimado por lead do diagnostico com IA (so para avisar o usuario) */
 const CUSTO_IA_POR_LEAD = 0.01;
-
-/** ---- coluna "Site": rotulo + tom da pastilha por situacao ---- */
-const SITE_PASTILHA: Record<
-  SiteSituacao,
-  { texto: string; tom: "ok" | "atencao" | "ruim" | "neutro" | "apagado" }
-> = {
-  ok: { texto: "no ar", tom: "ok" },
-  instavel: { texto: "instável", tom: "atencao" },
-  "fora-do-ar": { texto: "fora do ar", tom: "ruim" },
-  "nao-analisado": { texto: "checando…", tom: "apagado" },
-  "sem-site": { texto: "sem site", tom: "neutro" },
-};
-
-/** ---- coluna "Anúncios": pastilha a partir do veredito + se ja foi checado ----
- *  Regra de ouro do projeto: nunca afirmamos "não anuncia". O máximo é
- *  "sem indício", e só quando de fato houve checagem. */
-function anuncioPastilha(l: LeadEnriquecido): { texto: string; tom: "ok" | "atencao" | "neutro" | "apagado" } {
-  if (l.vereditoAnuncio === "forte") return { texto: "anuncia", tom: "ok" };
-  if (l.vereditoAnuncio === "alguns") return { texto: "alguns indícios", tom: "atencao" };
-  if (l.vereditoAnuncio === "nenhum") return { texto: "sem indício", tom: "neutro" };
-  if (l.adsAnalisado) return { texto: "sem dados", tom: "apagado" };
-  return { texto: "checando…", tom: "apagado" };
-}
 
 /** ---- filtros rapidos: cada "pilula" liga/desliga UM criterio ---- */
 type FiltroRapido = {
@@ -334,7 +312,7 @@ export function LeadsTabela({
             <tbody>
               {visiveis.map((l) => {
                 const site = SITE_PASTILHA[l.siteSituacao];
-                const anuncio = anuncioPastilha(l);
+                const anuncio = pastilhaAnuncio(l.vereditoAnuncio, l.adsAnalisado);
                 const marcado = selecionados.has(l.id);
                 return (
                   <tr

@@ -155,6 +155,7 @@ export async function analisarSite(
       viewportDeviceWidth: sinais.viewportDeviceWidth,
       redesSociais: sinais.redesSociais,
       evidencias: sinais.evidencias,
+      resumoTextual: sinais.resumoTextual,
       truncado: resp.truncado,
       content_type: resp.contentType,
       pagespeed: ps,

@@ -53,6 +53,9 @@ export type EntradaSite =
       tem_tag_google_ads: Talvez<boolean>;
       tem_remarketing_doubleclick: Talvez<boolean>;
       erro_ao_analisar: string | null;
+      /** meta description + trecho de texto visivel da home (etapa 22) - da pro
+       *  modelo ler do que a empresa fala, nao so sinais sim/nao. */
+      resumo_textual: Talvez<string>;
     }
   | Desconhecido;
 
@@ -76,13 +79,44 @@ export type EntradaDiagnostico = {
   avaliacoes_recentes: EntradaReviews;
 };
 
-/** Saida estruturada exigida pela etapa 14. */
+/** Um argumento de venda: sempre amarrado a UM dado real do dossie (nunca solto). */
+export type Gatilho = {
+  titulo: string;
+  descricao: string;
+  /** o dado do JSON de onde esse gatilho saiu - pra nunca virar afirmacao vazia */
+  fonte: string;
+};
+
+export type PropostaComercial = {
+  servico: string;
+  escopo: string;
+  /** por que ESSE servico e nao outro, pra ESSE lead */
+  justificativa: string;
+};
+
+export type EstrategiaAbordagem = {
+  canal: string;
+  melhorHorario: string;
+  gatilhos: Gatilho[];
+};
+
+export type Objecao = {
+  pergunta: string;
+  resposta: string;
+};
+
+/** Saida estruturada do dossie comercial completo (etapa 22).
+ *  Continua com a mesma regra de ouro da etapa 14: so fatos do JSON de entrada,
+ *  nunca preco/numero/prova inventados. */
 export type DiagnosticoIa = {
   resumo: string;
-  problemas: string[];
-  oportunidades: string[];
-  servicoSugerido: string;
-  anguloComercial: string;
+  pontosFortes: string[];
+  pontosFracos: string[];
+  proposta: PropostaComercial;
+  estrategia: EstrategiaAbordagem;
+  /** rascunho de 1a mensagem - sempre pra revisar antes de mandar, nunca automatico */
+  mensagemInicial: string;
+  objecoes: Objecao[];
   confianca: ConfiancaIa;
   fatosUtilizados: string[];
 };

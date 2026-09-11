@@ -51,3 +51,12 @@ export type EstadoDiagnostico =
   | { status: "erro"; mensagem: string };
 
 export const ESTADO_DIAGNOSTICO_INICIAL: EstadoDiagnostico = { status: "idle" };
+
+/** Etapa 23: 1 clique roda site + score + redes + anuncios + IA, nessa ordem,
+ *  tudo no mesmo pedido ao servidor (sem fila/worker). */
+export type EstadoProcessarTudo =
+  | { status: "idle" }
+  | { status: "ok"; avisoIa: string | null }
+  | { status: "erro"; mensagem: string };
+
+export const ESTADO_PROCESSAR_TUDO_INICIAL: EstadoProcessarTudo = { status: "idle" };

@@ -4,15 +4,23 @@ import { supabaseServer } from "@/lib/supabase/server";
 import type { AdSignal, AiDiagnosis, Lead, Score, SiteAnalysis, SocialAnalysis } from "@/lib/db-types";
 import type { FatorScore, ModeradorScore } from "@/lib/score/tipos";
 import { normalizarDetalhes } from "@/lib/enriquecimento/normalizar";
+import { situacaoDoSite } from "@/lib/leads/consulta";
+import { SITE_PASTILHA, pastilhaAnuncio } from "@/lib/leads/apresentacao";
+import { montarDiagnosticoDaLinha } from "@/lib/ia/normalizar-linha";
+import { Cartao, Pastilha, SeloScore } from "@/components/ui";
 import { AnalisarSite } from "./analisar";
 import { RecalcularScore } from "./score";
 import { EnriquecerLead } from "./enriquecer";
 import { AnalisarRedes } from "./social";
-import { GerarDiagnostico } from "./diagnostico";
 import { DetectarAds } from "./detectar-ads";
 import { Favoritar } from "./favoritar";
+import { ProcessarTudo } from "./processar-tudo";
+import { Dossie } from "./dossie";
 
 export const dynamic = "force-dynamic";
+// o botao "Fazer diagnostico completo" roda site + score + redes + anuncios +
+// IA num pedido so, sem fila - da tempo dele terminar antes do timeout padrao.
+export const maxDuration = 60;
 
 type Detalhamento = {
   confianca?: string;
@@ -35,11 +43,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
     .maybeSingle();
   const a = analiseRaw as SiteAnalysis | null;
 
-  const { data: scoreRaw } = await db
-    .from("scores")
-    .select("*")
-    .eq("lead_id", id)
-    .maybeSingle();
+  const { data: scoreRaw } = await db.from("scores").select("*").eq("lead_id", id).maybeSingle();
   const score = scoreRaw as Score | null;
   const det = (score?.detalhamento ?? {}) as Detalhamento;
 
@@ -50,18 +54,10 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
     .order("verificado_em", { ascending: false });
   const sociais = (sociaisRaw ?? []) as SocialAnalysis[];
 
-  const { data: diagRaw } = await db
-    .from("ai_diagnoses")
-    .select("*")
-    .eq("lead_id", id)
-    .maybeSingle();
+  const { data: diagRaw } = await db.from("ai_diagnoses").select("*").eq("lead_id", id).maybeSingle();
   const diag = diagRaw as AiDiagnosis | null;
 
-  const { data: adsRaw } = await db
-    .from("ad_signals")
-    .select("*")
-    .eq("lead_id", id)
-    .maybeSingle();
+  const { data: adsRaw } = await db.from("ad_signals").select("*").eq("lead_id", id).maybeSingle();
   const ads = adsRaw as AdSignal | null;
 
   let detalhes = null;
@@ -87,14 +83,38 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
     })
     .filter((p): p is { id: string; nicho: string; regiao_texto: string } => p != null);
 
+  // ---------- resumo dos 4 sinais, no mesmo estilo da tabela (etapa 21/23) ----------
+  const temUrl = (lead.site_url ?? "").trim() !== "";
+  const siteSituacao = situacaoDoSite(temUrl, a);
+  const sitePastilha = SITE_PASTILHA[siteSituacao];
+  const anuncioPastilha = pastilhaAnuncio(
+    ads?.veredito === "forte" || ads?.veredito === "alguns" || ads?.veredito === "nenhum"
+      ? ads.veredito
+      : null,
+    !!ads,
+  );
+  const temRedeLink = (lead.instagram_url ?? "").trim() !== "" || (lead.facebook_url ?? "").trim() !== "";
+  const redesPastilha = sociais.some((s) => s.status === "encontrado")
+    ? { texto: "perfil encontrado", tom: "ok" as const }
+    : sociais.length > 0
+      ? { texto: "não encontrado", tom: "neutro" as const }
+      : temRedeLink
+        ? { texto: "tem link, a checar", tom: "apagado" as const }
+        : { texto: "sem link", tom: "neutro" as const };
+  const temContato = lead.telefone || a?.tem_whatsapp === true;
+  const contatoPastilha = a?.tem_whatsapp === true
+    ? { texto: "WhatsApp no site", tom: "ok" as const }
+    : temContato
+      ? { texto: "telefone", tom: "neutro" as const }
+      : { texto: "sem contato direto", tom: "apagado" as const };
+
+  const diagnostico = diag && !diag.erro ? montarDiagnosticoDaLinha(diag) : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         {pesquisas[0] && (
-          <Link
-            href={`/pesquisa/${pesquisas[0].id}`}
-            className="text-sm text-muted hover:text-ink"
-          >
+          <Link href={`/pesquisa/${pesquisas[0].id}`} className="text-sm text-muted hover:text-ink">
             &larr; {pesquisas[0].nicho} em {pesquisas[0].regiao_texto}
           </Link>
         )}
@@ -105,6 +125,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         <p className="text-sm text-muted">
           {lead.categoria ?? "—"}
           {lead.endereco ? ` · ${lead.endereco}` : ""}
+          {lead.avaliacao != null && (
+            <span className="tabular-nums"> · ★ {lead.avaliacao} ({lead.qtd_avaliacoes ?? 0})</span>
+          )}
         </p>
         <p className="text-sm">
           {lead.site_url ? (
@@ -120,6 +143,47 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             <span className="text-faint">sem site cadastrado</span>
           )}
         </p>
+      </div>
+
+      {/* ---------- 1 clique: roda tudo e mostra o dossie ---------- */}
+      <Cartao className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted">Score</span>
+          <SeloScore score={score?.total ?? null} />
+        </div>
+        <ProcessarTudo leadId={id} jaTemDossie={!!diagnostico} />
+      </Cartao>
+
+      {/* ---------- 4 sinais de relance ---------- */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <CelulaSinal titulo="Anúncios" pastilha={anuncioPastilha} />
+        <CelulaSinal titulo="Site" pastilha={sitePastilha} />
+        <CelulaSinal titulo="Redes" pastilha={redesPastilha} />
+        <CelulaSinal titulo="Contato" pastilha={contatoPastilha} />
+      </div>
+
+      {/* ---------- o dossie ---------- */}
+      {diagnostico ? (
+        <Dossie diagnostico={diagnostico} modelo={diag?.modelo ?? null} atualizadoEm={diag?.atualizado_em ?? null} />
+      ) : diag?.erro ? (
+        <Cartao className="bg-warn-soft">
+          <p className="text-sm text-warn">O último diagnóstico com IA falhou: {diag.erro}</p>
+        </Cartao>
+      ) : (
+        <Cartao className="border-dashed text-center">
+          <p className="text-sm text-muted">
+            Ainda sem dossiê. Clique em &ldquo;Fazer diagnóstico completo&rdquo; acima — a IA lê os
+            dados já coletados e escreve pontos fortes/fracos, uma proposta e a estratégia de
+            abordagem.
+          </p>
+        </Cartao>
+      )}
+
+      {/* ---------- detalhes tecnicos: dados crus + controles individuais ---------- */}
+      <div className="flex items-center gap-2 pt-2">
+        <div className="h-px flex-1 bg-line" />
+        <p className="text-xs font-semibold uppercase tracking-wide text-faint">Detalhes técnicos</p>
+        <div className="h-px flex-1 bg-line" />
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
@@ -192,9 +256,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
             {detalhes && detalhes.reviews.length > 0 && (
               <div className="flex flex-col gap-2 border-t border-line pt-3">
-                <p className="text-xs text-muted">
-                  Avaliações recentes ({detalhes.reviews.length})
-                </p>
+                <p className="text-xs text-muted">Avaliações recentes ({detalhes.reviews.length})</p>
                 {detalhes.reviews.map((r, i) => (
                   <div key={i} className="text-xs">
                     <p className="text-muted">
@@ -226,8 +288,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
         {!score ? (
           <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
-            Clique em &ldquo;Recalcular score&rdquo; (ou rode a análise de site — o score é
-            recalculado junto).
+            Clique em &ldquo;Recalcular score&rdquo; (ou use o botão &ldquo;Fazer diagnóstico
+            completo&rdquo; no topo — ele já inclui isso).
           </p>
         ) : (
           <>
@@ -276,80 +338,6 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium">Diagnóstico comercial (IA)</p>
-            <p className="text-xs text-muted">
-              {diag
-                ? `${diag.modelo} · prompt ${diag.versao_prompt} · ${new Date(
-                    diag.atualizado_em ?? diag.criado_em,
-                  ).toLocaleString("pt-BR")}` +
-                  (diag.custo_usd ? ` · US$ ${Number(diag.custo_usd).toFixed(5)}` : "") +
-                  (diag.tokens_entrada != null
-                    ? ` · ${(diag.tokens_entrada ?? 0) + (diag.tokens_saida ?? 0)} tokens`
-                    : "")
-                : "Ainda não gerado. Roda só sob clique (ou no lote do topo) — nunca automático."}
-            </p>
-          </div>
-          <GerarDiagnostico leadId={id} temScore={!!score} />
-        </div>
-
-        {!diag ? (
-          <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-xs text-muted">
-            A IA lê os dados já coletados (score, site, enriquecimento, redes) e escreve um resumo
-            comercial. Ela não inventa: o que falta fica como &ldquo;não avaliado&rdquo;.
-          </p>
-        ) : diag.erro ? (
-          <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
-            {diag.erro}
-          </p>
-        ) : (
-          <>
-            {diag.resumo && <p className="text-sm text-ink">{diag.resumo}</p>}
-
-            <ListaDiag titulo="Problemas detectados" itens={diag.problemas} />
-            <ListaDiag titulo="Oportunidades" itens={diag.oportunidades} />
-
-            <dl className="grid grid-cols-1 gap-2 border-t border-line pt-3 text-sm sm:grid-cols-2">
-              {diag.servico_sugerido && (
-                <div>
-                  <dt className="text-xs text-muted">Serviço que poderíamos oferecer</dt>
-                  <dd>{diag.servico_sugerido}</dd>
-                </div>
-              )}
-              {(diag.angulo_comercial ?? diag.angulo_de_entrada) && (
-                <div>
-                  <dt className="text-xs text-muted">Melhor ângulo comercial</dt>
-                  <dd>{diag.angulo_comercial ?? diag.angulo_de_entrada}</dd>
-                </div>
-              )}
-            </dl>
-
-            <p className="text-xs text-muted">
-              Confiança do diagnóstico: <strong>{diag.confianca ?? "—"}</strong>
-            </p>
-
-            {Array.isArray(diag.fatos_utilizados) && diag.fatos_utilizados.length > 0 && (
-              <details className="text-xs text-muted">
-                <summary className="cursor-pointer">
-                  Fatos usados ({(diag.fatos_utilizados as string[]).length})
-                </summary>
-                <ul className="mt-1 list-disc pl-4">
-                  {(diag.fatos_utilizados as string[]).map((f, i) => (
-                    <li key={i}>{f}</li>
-                  ))}
-                </ul>
-              </details>
-            )}
-
-            <p className="text-xs text-faint">
-              Texto gerado por {diag.modelo}. Baseado só nos dados do Prospekta — confira antes de usar.
-            </p>
-          </>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Boletim técnico do site</p>
@@ -390,21 +378,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               <Check rotulo="DoubleClick / remarketing" v={a.tem_doubleclick} />
             </ul>
 
-            {a.erro && (
-              <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">
-                Aviso: {a.erro}
-              </p>
-            )}
+            {a.erro && <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">Aviso: {a.erro}</p>}
 
             <dl className="grid grid-cols-2 gap-3 border-t border-line pt-3 text-xs sm:grid-cols-4">
               <Dado rotulo="Status HTTP" valor={a.status_http?.toString() ?? "—"} />
               <Dado rotulo="Redirects" valor={a.qtd_redirects?.toString() ?? "—"} />
               <Dado rotulo="Peso da home" valor={a.peso_kb != null ? `${a.peso_kb} kB` : "—"} />
               <Dado rotulo="TTFB" valor={a.ttfb_ms != null ? `${a.ttfb_ms} ms` : "—"} />
-              <Dado
-                rotulo="Nota mobile (código)"
-                valor={a.nota_mobile != null ? `${a.nota_mobile}/100` : "—"}
-              />
+              <Dado rotulo="Nota mobile (código)" valor={a.nota_mobile != null ? `${a.nota_mobile}/100` : "—"} />
               <Dado
                 rotulo="Performance (PageSpeed)"
                 valor={a.nota_desempenho != null ? `${a.nota_desempenho}/100` : "não medida"}
@@ -416,10 +397,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             {Array.isArray(a.stack) && a.stack.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {(a.stack as string[]).map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full bg-soft px-2 py-0.5 text-xs text-muted"
-                  >
+                  <span key={s} className="rounded-full bg-soft px-2 py-0.5 text-xs text-muted">
                     {s}
                   </span>
                 ))}
@@ -436,7 +414,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             <p className="text-xs text-muted">
               {ads?.verificado_em
                 ? `Verificado em ${new Date(ads.verificado_em).toLocaleString("pt-BR")}`
-                : "Ainda não verificado. Roda junto com a análise de site."}
+                : "Ainda não verificado."}
             </p>
           </div>
           <DetectarAds leadId={id} />
@@ -450,7 +428,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         ) : (
           <>
             <div className="flex items-center gap-2">
-              <VeredictoAdsBadge veredito={ads.veredito} />
+              <Pastilha tom={anuncioPastilha.tom}>{anuncioPastilha.texto}</Pastilha>
               <span className="text-xs text-muted">
                 confiança <strong>{ads.confianca ?? "—"}</strong>
               </span>
@@ -493,7 +471,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             </dl>
 
             <p className="text-xs text-faint">
-              &ldquo;Nenhum indício&rdquo; <strong>não</strong> quer dizer que a empresa não anuncia —
+              &ldquo;Sem indício&rdquo; <strong>não</strong> quer dizer que a empresa não anuncia —
               pode anunciar para uma página externa ou só nas redes. Sem IA.
             </p>
           </>
@@ -534,6 +512,23 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   );
 }
 
+function CelulaSinal({
+  titulo,
+  pastilha,
+}: {
+  titulo: string;
+  pastilha: { texto: string; tom: "ok" | "atencao" | "ruim" | "info" | "neutro" | "apagado" };
+}) {
+  return (
+    <div className="rounded-xl border border-line bg-card p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-faint">{titulo}</p>
+      <div className="mt-1.5">
+        <Pastilha tom={pastilha.tom}>{pastilha.texto}</Pastilha>
+      </div>
+    </div>
+  );
+}
+
 function LinhaSocial({
   plataforma,
   s,
@@ -544,12 +539,7 @@ function LinhaSocial({
   const status = s?.status ?? "sem_link";
   const marca =
     status === "encontrado" ? "✓" : status === "nao_encontrado" ? "✗" : status === "sem_link" ? "—" : "?";
-  const cor =
-    status === "encontrado"
-      ? "text-ok"
-      : status === "nao_encontrado"
-        ? "text-bad"
-        : "text-faint";
+  const cor = status === "encontrado" ? "text-ok" : status === "nao_encontrado" ? "text-bad" : "text-faint";
   const rotuloStatus: Record<string, string> = {
     encontrado: "perfil encontrado",
     nao_encontrado: "não encontrado (404)",
@@ -603,40 +593,9 @@ function LinhaSocial({
   );
 }
 
-function VeredictoAdsBadge({ veredito }: { veredito: string | null }) {
-  const mapa: Record<string, { txt: string; cls: string }> = {
-    forte: { txt: "sinais fortes", cls: "bg-ok-soft text-ok" },
-    alguns: { txt: "alguns sinais", cls: "bg-warn-soft text-warn" },
-    nenhum: { txt: "nenhum indício", cls: "bg-soft text-muted" },
-  };
-  const m = veredito ? mapa[veredito] : null;
-  if (!m) return <span className="text-xs text-faint">sem veredito</span>;
-  return <span className={`rounded-xl px-2 py-0.5 text-xs font-medium ${m.cls}`}>{m.txt}</span>;
-}
-
-function ListaDiag({ titulo, itens }: { titulo: string; itens: unknown }) {
-  const lista = Array.isArray(itens) ? (itens as unknown[]).filter((x): x is string => typeof x === "string") : [];
-  if (lista.length === 0) return null;
-  return (
-    <div>
-      <p className="mb-1 text-xs text-muted">{titulo}</p>
-      <ul className="list-disc pl-4 text-sm text-ink">
-        {lista.map((t, i) => (
-          <li key={i}>{t}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function Check({ rotulo, v }: { rotulo: string; v: boolean | null }) {
   const marca = v === true ? "✓" : v === false ? "✗" : "?";
-  const cor =
-    v === true
-      ? "text-ok"
-      : v === false
-        ? "text-bad"
-        : "text-faint";
+  const cor = v === true ? "text-ok" : v === false ? "text-bad" : "text-faint";
   return (
     <li className="flex items-center justify-between gap-2">
       <span className="text-muted">{rotulo}</span>

@@ -26,10 +26,9 @@ export type ResumoLead = {
   vereditoAnuncio: VereditoAnuncioLead;
   temRedeSocial: boolean;
   redesAnalisadas: boolean;
+  /** so um resumo leve pro card da tabela - o dossie completo fica em /lead/[id] */
   diagnostico: {
     resumo: string | null;
-    servicoSugerido: string | null;
-    anguloComercial: string | null;
     confianca: string | null;
     erro: string | null;
   } | null;
@@ -75,7 +74,7 @@ export async function carregarResumoLead(
       db.from("social_analyses").select("id").eq("lead_id", leadId).limit(1),
       db
         .from("ai_diagnoses")
-        .select("resumo, servico_sugerido, angulo_comercial, confianca, erro")
+        .select("resumo, confianca, erro")
         .eq("lead_id", leadId)
         .maybeSingle(),
       db
@@ -100,8 +99,6 @@ export async function carregarResumoLead(
   const diagnostico = diag
     ? {
         resumo: (diag.resumo as string | null) ?? null,
-        servicoSugerido: (diag.servico_sugerido as string | null) ?? null,
-        anguloComercial: (diag.angulo_comercial as string | null) ?? null,
         confianca: (diag.confianca as string | null) ?? null,
         erro: (diag.erro as string | null) ?? null,
       }

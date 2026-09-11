@@ -252,17 +252,12 @@ export function CardLead({ lead, onClose }: { lead: LeadEnriquecido; onClose: ()
               <div className="rounded-xl border border-line p-3">
                 <p className="mb-1 text-xs font-medium text-muted">Diagnóstico com IA</p>
                 {resumo.diagnostico.resumo && <p>{resumo.diagnostico.resumo}</p>}
-                {resumo.diagnostico.servicoSugerido && (
-                  <p className="mt-1 text-xs text-muted">
-                    Serviço: {resumo.diagnostico.servicoSugerido}
-                  </p>
-                )}
-                {resumo.diagnostico.anguloComercial && (
-                  <p className="text-xs text-muted">Ângulo: {resumo.diagnostico.anguloComercial}</p>
-                )}
                 {resumo.diagnostico.confianca && (
-                  <p className="text-xs text-faint">Confiança: {resumo.diagnostico.confianca}</p>
+                  <p className="mt-1 text-xs text-faint">Confiança: {resumo.diagnostico.confianca}</p>
                 )}
+                <p className="mt-2 text-xs text-accent-ink">
+                  Dossiê completo (pontos fortes/fracos, proposta, mensagem) na página do lead ↓
+                </p>
               </div>
             )}
             {resumo?.diagnostico?.erro && (

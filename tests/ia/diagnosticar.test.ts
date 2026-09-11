@@ -20,10 +20,12 @@ const AGORA = () => new Date("2026-09-15T12:00:00.000Z");
 
 const RESPOSTA_OK = JSON.stringify({
   resumo: "Empresa ativa, boa reputacao, mas site sem WhatsApp e sem formulario.",
-  problemas: ["site sem WhatsApp", "site sem formulario"],
-  oportunidades: ["captacao de leads no site"],
-  servico_sugerido: "Landing page + trafego",
-  angulo_comercial: "Site recebe visita e nao gera contato",
+  pontos_fortes: ["nota alta"],
+  pontos_fracos: ["site sem WhatsApp", "site sem formulario"],
+  proposta: { servico: "Landing page + trafego", escopo: "1 pagina", justificativa: "falta captacao" },
+  estrategia: { canal: "whatsapp", melhor_horario: "tarde", gatilhos: [] },
+  mensagem_inicial: "Boa tarde!",
+  objecoes: [],
   confianca: "media",
   fatos_utilizados: ["score 85", "tem_whatsapp=false"],
 });
@@ -109,7 +111,8 @@ test("diagnosticar: score alto -> gerado, grava ai_diagnoses + api_usage", async
   assert.equal(row.lead_id, "L1");
   assert.equal(row.modelo, "gemini-2.0-flash");
   assert.equal(typeof row.resumo, "string");
-  assert.deepEqual(row.problemas, ["site sem WhatsApp", "site sem formulario"]);
+  assert.deepEqual(row.pontos_fracos, ["site sem WhatsApp", "site sem formulario"]);
+  assert.equal((row.proposta as { servico: string }).servico, "Landing page + trafego");
   assert.equal(row.tokens_entrada, 1500);
   assert.equal(row.erro, null);
   assert.ok(row.entrada, "grava o dossie enviado");

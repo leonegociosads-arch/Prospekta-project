@@ -171,11 +171,19 @@ export type AiDiagnosis = {
   modelo: string;
   versao_prompt: string;
   resumo: string | null;
+  /** colunas da etapa 14, mantidas so para diagnosticos antigos - a etapa 22 nao escreve mais nelas */
   problemas: Json | null;
   oportunidades: Json | null;
   servico_sugerido: string | null;
   angulo_comercial: string | null;
   angulo_de_entrada: string | null;
+  /** dossie completo (etapa 22) */
+  pontos_fortes: Json | null;
+  pontos_fracos: Json | null;
+  proposta: Json | null;
+  estrategia: Json | null;
+  mensagem_inicial: string | null;
+  objecoes: Json | null;
   confianca: ConfiancaIa | null;
   fatos_utilizados: Json | null;
   entrada: Json | null;

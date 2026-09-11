@@ -29,6 +29,8 @@ export type SinaisSite = {
   redesSociais: RedesEncontradas;
   /** trechos que dispararam cada deteccao, para conferir depois */
   evidencias: Record<string, string[]>;
+  /** meta description + trecho de texto visivel da home (para o dossie da IA). null se nao achou nada. */
+  resumoTextual: string | null;
 };
 
 export type ResultadoPageSpeed = {

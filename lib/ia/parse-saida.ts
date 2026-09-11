@@ -1,7 +1,18 @@
 // Le a resposta do modelo de forma DEFENSIVA: extrai o JSON, valida o formato,
 // limita tamanhos. Nunca lanca - devolve { ok:false, motivo } quando nao da.
+//
+// So "resumo" e obrigatorio (como na etapa 14) - todo o resto do dossie
+// (etapa 22) tem um valor de reserva sensato se o modelo esquecer o campo,
+// pra um dossie parcial nao virar "erro-modelo" por inteiro.
 
-import type { ConfiancaIa, DiagnosticoIa } from "./tipos";
+import type {
+  ConfiancaIa,
+  DiagnosticoIa,
+  EstrategiaAbordagem,
+  Gatilho,
+  Objecao,
+  PropostaComercial,
+} from "./tipos";
 
 export type ParseResultado =
   | { ok: true; diagnostico: DiagnosticoIa }
@@ -9,6 +20,8 @@ export type ParseResultado =
 
 const MAX_ITENS = 12;
 const MAX_ITEM = 400;
+const MAX_GATILHOS = 6;
+const MAX_OBJECOES = 6;
 
 export function parseDiagnostico(texto: string): ParseResultado {
   const bruto = extrairJson(texto);
@@ -30,10 +43,12 @@ export function parseDiagnostico(texto: string): ParseResultado {
 
   const diagnostico: DiagnosticoIa = {
     resumo: resumo.slice(0, 800),
-    problemas: listaTexto(o.problemas),
-    oportunidades: listaTexto(o.oportunidades),
-    servicoSugerido: (texto1(o.servico_sugerido) ?? "").slice(0, 300),
-    anguloComercial: (texto1(o.angulo_comercial) ?? "").slice(0, 600),
+    pontosFortes: listaTexto(o.pontos_fortes),
+    pontosFracos: listaTexto(o.pontos_fracos),
+    proposta: proposta(o.proposta),
+    estrategia: estrategia(o.estrategia),
+    mensagemInicial: (texto1(o.mensagem_inicial) ?? "").slice(0, 800),
+    objecoes: objecoes(o.objecoes),
     confianca: confianca(o.confianca),
     fatosUtilizados: listaTexto(o.fatos_utilizados),
   };
@@ -52,6 +67,10 @@ function extrairJson(texto: string): string | null {
   return alvo.slice(ini, fim + 1);
 }
 
+function objeto(v: unknown): Record<string, unknown> {
+  return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+}
+
 function texto1(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim();
@@ -65,6 +84,53 @@ function listaTexto(v: unknown): string[] {
     const t = texto1(item);
     if (t) out.push(t.slice(0, MAX_ITEM));
     if (out.length >= MAX_ITENS) break;
+  }
+  return out;
+}
+
+function proposta(v: unknown): PropostaComercial {
+  const p = objeto(v);
+  return {
+    servico: (texto1(p.servico) ?? "").slice(0, 200),
+    escopo: (texto1(p.escopo) ?? "").slice(0, 500),
+    justificativa: (texto1(p.justificativa) ?? "").slice(0, 500),
+  };
+}
+
+function estrategia(v: unknown): EstrategiaAbordagem {
+  const e = objeto(v);
+  const brutos = Array.isArray(e.gatilhos) ? e.gatilhos : [];
+  const gatilhos: Gatilho[] = [];
+  for (const g of brutos) {
+    const go = objeto(g);
+    const titulo = texto1(go.titulo);
+    if (!titulo) continue;
+    gatilhos.push({
+      titulo: titulo.slice(0, 120),
+      descricao: (texto1(go.descricao) ?? "").slice(0, 400),
+      fonte: (texto1(go.fonte) ?? "").slice(0, 200),
+    });
+    if (gatilhos.length >= MAX_GATILHOS) break;
+  }
+  return {
+    canal: (texto1(e.canal) ?? "").slice(0, 120),
+    melhorHorario: (texto1(e.melhor_horario) ?? "").slice(0, 200),
+    gatilhos,
+  };
+}
+
+function objecoes(v: unknown): Objecao[] {
+  if (!Array.isArray(v)) return [];
+  const out: Objecao[] = [];
+  for (const item of v) {
+    const io = objeto(item);
+    const pergunta = texto1(io.pergunta);
+    if (!pergunta) continue;
+    out.push({
+      pergunta: pergunta.slice(0, 200),
+      resposta: (texto1(io.resposta) ?? "").slice(0, 500),
+    });
+    if (out.length >= MAX_OBJECOES) break;
   }
   return out;
 }

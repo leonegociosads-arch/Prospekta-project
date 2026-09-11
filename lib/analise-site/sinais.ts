@@ -77,6 +77,37 @@ function primeiroGrupo(html: string, re: RegExp): string | null {
   return m && m[1] ? m[1].trim().replace(/\s+/g, " ").slice(0, 200) : null;
 }
 
+const MAX_RESUMO_TEXTUAL = 900;
+
+/** Meta description + um trecho do texto visivel da home, para o dossie da IA
+ *  (etapa 22). PURO, sem biblioteca de parsing HTML - so regex, no mesmo
+ *  estilo do resto do arquivo. Nao e "scraping" de dado privado: e so o texto
+ *  publico que qualquer visitante ve na pagina. */
+function extrairResumoTextual(html: string): string | null {
+  const descricao = primeiroGrupo(
+    html,
+    /<meta[^>]+name=["']description["'][^>]+content=["']([^"']{1,400})["']/i,
+  );
+
+  const semLixo = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ");
+  const textoVisivel = semLixo
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&(?:ldquo|rdquo|quot);/gi, '"')
+    .replace(/&(?:lsquo|rsquo|apos);/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const partes = [descricao, textoVisivel].filter((t): t is string => !!t && t.length > 0);
+  if (partes.length === 0) return null;
+  const texto = partes.join(" — ").slice(0, MAX_RESUMO_TEXTUAL).trim();
+  return texto.length > 0 ? texto : null;
+}
+
 export function extrairSinais(
   html: string,
   urlFinal: string,
@@ -155,6 +186,7 @@ export function extrairSinais(
   const titulo = primeiroGrupo(h, /<title[^>]*>([^<]{1,300})<\/title>/i);
   const servidor = headers["server"] ?? headers["x-powered-by"] ?? null;
   const redesSociais = extrairRedesDoHtml(h);
+  const resumoTextual = extrairResumoTextual(h);
   void urlFinal;
 
   return {
@@ -176,6 +208,7 @@ export function extrairSinais(
     servidor,
     redesSociais,
     evidencias,
+    resumoTextual,
   };
 }
 

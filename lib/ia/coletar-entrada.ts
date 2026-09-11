@@ -172,7 +172,15 @@ function montarSite(a: Record<string, unknown> | null): EntradaDiagnostico["site
     tem_tag_google_ads: b("tem_google_ads"),
     tem_remarketing_doubleclick: b("tem_doubleclick"),
     erro_ao_analisar: (a.erro as string | null) ?? null,
+    resumo_textual: ou(resumoTextualDoSite(a.sinais)),
   };
+}
+
+/** O boletim guarda o texto da home dentro do jsonb `sinais` (etapa 22). */
+function resumoTextualDoSite(sinais: unknown): string | null {
+  if (!sinais || typeof sinais !== "object") return null;
+  const v = (sinais as { resumoTextual?: unknown }).resumoTextual;
+  return typeof v === "string" && v.trim() !== "" ? v : null;
 }
 
 /** ISO mais recente entre os marcos (ou null se nenhum). */

@@ -38,12 +38,14 @@ console.log("tokens .........:", (r.tokensEntrada ?? 0) + "in +" + (r.tokensSaid
 console.log("custo (USD) ....:", r.custoUsd);
 if (r.erro) console.log("erro ...........:", r.erro);
 if (r.diagnostico) {
-  console.log("\n--- diagnostico ---");
+  console.log("\n--- dossie ---");
   console.log("resumo:", r.diagnostico.resumo);
-  console.log("problemas:", r.diagnostico.problemas);
-  console.log("oportunidades:", r.diagnostico.oportunidades);
-  console.log("servico sugerido:", r.diagnostico.servicoSugerido);
-  console.log("angulo comercial:", r.diagnostico.anguloComercial);
+  console.log("pontos fortes:", r.diagnostico.pontosFortes);
+  console.log("pontos fracos:", r.diagnostico.pontosFracos);
+  console.log("proposta:", r.diagnostico.proposta);
+  console.log("estrategia:", r.diagnostico.estrategia);
+  console.log("mensagem inicial:", r.diagnostico.mensagemInicial);
+  console.log("objecoes:", r.diagnostico.objecoes);
   console.log("confianca:", r.diagnostico.confianca);
   console.log("fatos utilizados:", r.diagnostico.fatosUtilizados);
 }
