@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   IDENTIDADE PROSPEKTA (etapa 30)
+   IDENTIDADE PROSPEKTA (etapa 30, com claro/escuro na etapa 32)
 
    O sistema tem DUAS CAMADAS de cor, e elas não se misturam:
 
    CAMADA 1 - MARCA E ESTRUTURA (abaixo, "superfícies" e "marca")
      Fundo, superfícies, bordas, texto neutro e o roxo da marca. É o que dá a
-     cara de "scanner de oportunidades": grafite azulado, escuro, denso.
+     cara de "scanner de oportunidades". Tem uma versão escura (padrão) e uma
+     clara - o botão de tema no cabeçalho troca entre as duas.
 
    CAMADA 2 - SEMÂNTICA DO PRODUTO ("significado", mais abaixo)
      verde = bom/confirmado · amarelo = parcial/atenção · vermelho =
      problema (e portanto oportunidade de venda) · azul = informativo.
-     Esses valores comunicam DADO, não estética. Não são tema: são a legenda
-     da tabela e do dossiê. Mexer neles muda o que a tela afirma - por isso
-     ficam iguais mesmo quando a marca muda.
+     Esses valores comunicam DADO, não estética. Cada tema tem o seu proprio
+     tom (o do claro e o mesmo que o Prospekta ja usava antes da identidade
+     escura), mas o SIGNIFICADO de cada cor nunca muda.
 
    O verde da MARCA (--brand-green) NÃO é o verde de STATUS (--ok). O primeiro
-   é identidade (aparece só no símbolo); o segundo é informação.
+   é identidade (aparece só no símbolo, igual nos dois temas); o segundo é
+   informação.
 
    Como o @theme inline faz cada utilitário apontar direto para a variável
    base (bg-card -> var(--card)), trocar os valores aqui repinta o app inteiro
    sem tocar em uma classe sequer dos componentes.
+
+   TROCA DE TEMA: o padrão (sem atributo nenhum) é escuro - e a identidade do
+   produto. O botão em app/theme-toggle.tsx grava a escolha em localStorage e
+   poe data-theme="light" ou "dark" na tag <html>. Um script inline no layout
+   (antes do body) le essa escolha ANTES da 1a pintura, para nao piscar o
+   tema errado por uma fracao de segundo.
    ========================================================================== */
 
 :root {
@@ -56,6 +64,13 @@
   --accent-ink: #c4acff;
   --brand-green: #00e96b;
 
+  /* sombra minima de proposito: no escuro ela some e so suja a borda -
+     a separacao vem da linha. Forte so no que flutua de verdade (modal). */
+  --shadow-card-base: none;
+  --shadow-pop-base: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+
+  color-scheme: dark;
+
   /* ======================================================================
      CAMADA 2 - SIGNIFICADO. NÃO SUBSTITUIR POR COR DE MARCA.
      ====================================================================== */
@@ -67,6 +82,45 @@
   --bad-soft: #391a1c;
   --info: #6f9dff;
   --info-soft: #17233d;
+}
+
+/* --------------------------------------------------------------- tema claro
+   Mesma marca (roxo/verde), superficies e semantica adaptadas para fundo
+   claro. Os valores de ok/warn/bad/info aqui sao os MESMOS que o Prospekta
+   usava antes da identidade escura (etapa 25) - ja validados neste projeto. */
+:root[data-theme="light"] {
+  --canvas: #f4f5f8;
+  --painel: #ffffff;
+  --card: #ffffff;
+  --soft: #eef0f4;
+
+  --ink: #14181f;
+  --muted: #5b6472;
+  --faint: #6b7480;
+  --placeholder: #98a1ac;
+
+  --line: #e3e6eb;
+  --line-strong: #cbd0d8;
+
+  --accent: #7547e8;
+  --accent-press: #6539cc;
+  --accent-soft: #efeafe;
+  --accent-ink: #4a2cc6;
+  --brand-green: #00e96b;
+
+  --shadow-card-base: 0 1px 2px rgba(15, 15, 25, 0.05);
+  --shadow-pop-base: 0 8px 24px -10px rgba(15, 15, 25, 0.18);
+
+  color-scheme: light;
+
+  --ok: #0d9152;
+  --ok-soft: #e2f3e9;
+  --warn: #a5680b;
+  --warn-soft: #f9edd7;
+  --bad: #cf3b3a;
+  --bad-soft: #fbe4e4;
+  --info: #2b66e0;
+  --info-soft: #e6eefc;
 }
 
 @theme inline {
@@ -95,22 +149,15 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
-  /* No escuro a sombra some e só suja a borda: a separação vem da linha.
-     A sombra forte fica só para o que flutua de verdade (modal). */
-  --shadow-card: none;
-  --shadow-pop: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+  --shadow-card: var(--shadow-card-base);
+  --shadow-pop: var(--shadow-pop-base);
 
   --font-sans: var(--font-figtree);
   --font-display: var(--font-figtree);
   --font-mono: var(--font-jetbrains);
 }
 
-/* Tema único e escuro de propósito: a identidade do produto É escura, então
-   não há variante clara para seguir o sistema operacional. Declarar o
-   color-scheme faz os controles nativos (checkbox, select, barra de rolagem)
-   virem escuros também, sem CSS extra. */
 html {
-  color-scheme: dark;
   scrollbar-color: var(--line-strong) transparent;
 }
 

@@ -3,6 +3,7 @@ import { Figtree, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { Nav } from "./nav";
+import { TrocarTema } from "./theme-toggle";
 
 const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
@@ -12,13 +13,29 @@ export const metadata: Metadata = {
   description: "Ferramenta pessoal de prospeccao de leads.",
 };
 
+// Le a escolha de tema salva ANTES da 1a pintura, para nao "piscar" o tema
+// escuro (o padrao) e so depois trocar para o claro que o usuario escolheu.
+// Roda uma vez, direto no HTML - por isso e um script cru, nao um componente.
+const SCRIPT_TEMA = `
+try {
+  if (localStorage.getItem("prospekta-tema") === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+} catch (e) {}
+`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
+      // data-theme e alterado por este script e pelo botao de tema, sem
+      // envolver o React - suppressHydrationWarning evita um aviso falso.
+      suppressHydrationWarning
       className={`${figtree.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+
         <header className="sticky top-0 z-20 border-b border-line bg-canvas/90 backdrop-blur">
           <div className="mx-auto flex max-w-[68rem] items-center gap-2 px-4 py-3 sm:gap-4 sm:px-6">
             <Link
@@ -32,6 +49,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Nav />
 
             <div className="flex-1" />
+
+            <TrocarTema />
 
             {/* No celular o rótulo encurta para a barra caber sem quebrar linha. */}
             <Link
