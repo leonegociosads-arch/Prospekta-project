@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
+import { Cartao, SecaoHeader } from "@/components/ui";
 import { enfileirarDiagnosticosAction } from "./actions";
 import { ESTADO_ENFILEIRAR_DIAGNOSTICO_INICIAL } from "./estado";
 
@@ -20,28 +21,26 @@ export function GerarDiagnosticos({
   );
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-info-soft text-sm">✨</span>
-            Diagnóstico comercial (IA)
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {progresso.comDiagnostico}/{progresso.elegiveis} leads elegíveis com diagnóstico
-            {progresso.naFila > 0 ? ` · ${progresso.naFila} na fila` : ""}
-          </p>
-        </div>
-        <form action={formAction}>
-          <button
-            type="submit"
-            disabled={pending || progresso.elegiveis === 0}
-            className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pending ? "Enfileirando…" : "Gerar diagnósticos do topo"}
-          </button>
-        </form>
-      </div>
+    <Cartao className="flex flex-col gap-3">
+      <SecaoHeader
+        icone="✨"
+        tom="info"
+        titulo="Diagnóstico comercial (IA)"
+        subtitulo={`${progresso.comDiagnostico}/${progresso.elegiveis} leads elegíveis com diagnóstico${
+          progresso.naFila > 0 ? ` · ${progresso.naFila} na fila` : ""
+        }`}
+        acao={
+          <form action={formAction}>
+            <button
+              type="submit"
+              disabled={pending || progresso.elegiveis === 0}
+              className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pending ? "Enfileirando…" : "Gerar diagnósticos do topo"}
+            </button>
+          </form>
+        }
+      />
 
       <p className="text-xs text-muted">
         Elegível: {progresso.criterio}. Só enfileira — deixe <span className="font-mono">npm run worker</span>{" "}
@@ -69,6 +68,6 @@ export function GerarDiagnosticos({
           </button>
         </div>
       )}
-    </div>
+    </Cartao>
   );
 }

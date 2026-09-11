@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import { inicioDoMesUtc } from "@/lib/guardas";
 import {
@@ -15,7 +14,7 @@ import {
   type UsoBruto,
 } from "@/lib/config/inspecao";
 import { carregarGuardaConfig } from "@/lib/guardas/config";
-import { Aviso } from "@/components/ui";
+import { Aviso, Metrica, Panel, Voltar } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Configuração · Prospekta" };
@@ -45,6 +44,8 @@ export default async function ConfigPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Voltar href="/">Pesquisas</Voltar>
+
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Configuração</h1>
         <p className="text-sm text-muted">
@@ -56,16 +57,13 @@ export default async function ConfigPage() {
       {error && <Aviso>Não foi possível ler o consumo do mês: {error.message}</Aviso>}
 
       {/* Consumo do mes */}
-      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium">Consumo em {nomeMes}</h2>
-          <span className="text-xs text-muted">teto: {g.tetoMensalChamadas} chamadas</span>
-        </div>
+      <Panel rotulo={`Consumo em ${nomeMes}`} className="flex flex-col gap-3 p-4">
+        <p className="text-xs text-muted">Teto configurado: {g.tetoMensalChamadas} chamadas Google/mês.</p>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Cartao rotulo="Chamadas Google" valor={String(uso.googleTotal)} sub={`de ${g.tetoMensalChamadas}`} />
-          <Cartao rotulo="Chamadas IA" valor={String(uso.iaTotal)} />
-          <Cartao rotulo="Custo estimado" valor={`US$ ${uso.custoUsdTotal.toFixed(4)}`} />
+          <Metrica rotulo="Chamadas Google" valor={String(uso.googleTotal)} sub={`de ${g.tetoMensalChamadas}`} />
+          <Metrica rotulo="Chamadas IA" valor={String(uso.iaTotal)} />
+          <Metrica rotulo="Custo estimado" valor={`US$ ${uso.custoUsdTotal.toFixed(4)}`} />
         </div>
 
         {uso.porEndpoint.length === 0 ? (
@@ -94,40 +92,25 @@ export default async function ConfigPage() {
             </table>
           </div>
         )}
-      </section>
+      </Panel>
 
       {blocos.map((b) => (
         <BlocoView key={b.titulo} bloco={b} />
       ))}
-
-      <Link href="/" className="text-sm text-muted hover:text-ink">
-        &larr; Pesquisas
-      </Link>
-    </div>
-  );
-}
-
-function Cartao({ rotulo, valor, sub }: { rotulo: string; valor: string; sub?: string }) {
-  return (
-    <div className="rounded-xl border border-line bg-card px-3 py-2">
-      <p className="text-xs text-muted">{rotulo}</p>
-      <p className="font-mono text-lg font-semibold tabular-nums">{valor}</p>
-      {sub && <p className="text-xs text-faint">{sub}</p>}
     </div>
   );
 }
 
 function BlocoView({ bloco }: { bloco: BlocoConfig }) {
   return (
-    <section className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 shadow-card">
-      <h2 className="text-sm font-medium">{bloco.titulo}</h2>
+    <Panel rotulo={bloco.titulo} className="flex flex-col gap-2 p-4">
       {bloco.descricao && <p className="text-xs text-muted">{bloco.descricao}</p>}
       <dl className="mt-1 flex flex-col divide-y divide-line">
         {bloco.linhas.map((l) => (
           <LinhaView key={l.rotulo} linha={l} />
         ))}
       </dl>
-    </section>
+    </Panel>
   );
 }
 

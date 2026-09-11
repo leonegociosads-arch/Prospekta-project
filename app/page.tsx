@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Search } from "@/lib/db-types";
-import { EstadoVazio, Aviso, SeloScore } from "@/components/ui";
+import { EstadoVazio, Aviso, SeloScore, Metrica } from "@/components/ui";
 import { ListaPesquisas, type PesquisaResumo } from "./lista-pesquisas";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +44,14 @@ export default async function Home() {
     .order("nome", { ascending: true })
     .limit(50);
   const favoritos = (favRaw ?? []) as LeadFav[];
+
+  // total de leads analisados (tem score) - so contagem, sem trazer linhas
+  const { count: leadsAnalisados } = await supabase
+    .from("scores")
+    .select("id", { count: "exact", head: true });
+
+  const totalLeads = pesquisas.reduce((soma, p) => soma + p.totalLeads, 0);
+
   const scoreFav = new Map<string, number>();
   if (favoritos.length > 0) {
     const { data: sc } = await supabase
@@ -58,11 +66,20 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">Painel</h1>
+        <p className="text-sm text-muted">Suas pesquisas de leads, num só lugar.</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Metrica rotulo="Pesquisas" valor={String(pesquisas.length)} />
+        <Metrica rotulo="Leads encontrados" valor={String(totalLeads)} />
+        <Metrica rotulo="Leads analisados" valor={String(leadsAnalisados ?? 0)} />
+        <Metrica rotulo="Favoritos" valor={String(favoritos.length)} />
+      </div>
+
       <section className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Pesquisas</h1>
-          <p className="text-sm text-muted">Cada pesquisa é uma busca por um nicho numa região.</p>
-        </div>
+        <h2 className="text-sm font-semibold">Pesquisas</h2>
 
         {error && <Aviso>Erro ao ler o banco: {error.message}</Aviso>}
 

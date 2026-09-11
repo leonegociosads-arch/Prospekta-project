@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NICHOS } from "@/lib/nichos";
 import { LIMITES, estimarConsumo } from "@/lib/pesquisa/estimativa";
+import { Metrica, Panel } from "@/components/ui";
 import { criarPesquisaAction } from "./actions";
 import { ESTADO_INICIAL, type EstadoForm } from "./estado";
 
@@ -36,6 +37,7 @@ export function FormNovaPesquisa() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      <Panel className="flex flex-col gap-5 p-4 sm:p-5">
       <fieldset disabled={travado} className="flex flex-col gap-5">
         {/* Regiao */}
         <label className="flex flex-col gap-1.5">
@@ -115,17 +117,28 @@ export function FormNovaPesquisa() {
           </label>
         </div>
       </fieldset>
+      </Panel>
 
       {/* Estimativa ao vivo */}
-      <div className="rounded-xl border border-line bg-soft px-4 py-3 text-sm">
-        <p>
-          Vamos buscar ate <strong>{est.leadsAlvo} empresa{est.leadsAlvo === 1 ? "" : "s"}</strong>.
+      <Panel rotulo="Estimativa da pesquisa" className="p-4 text-sm sm:p-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+          <Metrica
+            rotulo="Leads solicitados"
+            valor={`${est.leadsAlvo}`}
+            sub={`empresa${est.leadsAlvo === 1 ? "" : "s"}`}
+          />
+          <Metrica
+            rotulo="Chamadas estimadas"
+            valor={`${est.chamadasMin}–${est.chamadasMax}`}
+            sub="Google Places"
+          />
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          1 busca + até 1 geocodificação se a região for nova — dentro da cota gratuita. Esta
+          etapa só cria a pesquisa e coloca a descoberta na fila; a busca de empresas no Google
+          roda depois, na página da pesquisa.
         </p>
-        <p className="mt-1 text-muted">
-          Consumo estimado: <strong>{est.chamadasMin} a {est.chamadasMax} chamada{est.chamadasMax === 1 ? "" : "s"}</strong>{" "}
-          a Google Places (1 busca + ate 1 geocodificacao se a regiao for nova). Dentro da cota gratuita.
-        </p>
-      </div>
+      </Panel>
 
       {/* Banners de estado */}
       {estado.status === "erro-supabase" && (
@@ -150,7 +163,7 @@ export function FormNovaPesquisa() {
           disabled={travado}
           className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Salvando…" : estado.status === "ok" ? "Criada" : "Criar pesquisa"}
+          {pending ? "Salvando…" : estado.status === "ok" ? "Criada" : "Iniciar pesquisa"}
         </button>
       </div>
     </form>

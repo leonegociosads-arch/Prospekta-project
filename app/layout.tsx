@@ -20,7 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur">
-          <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-[68rem] items-center gap-4 px-4 py-3 sm:px-6">
             <Link href="/" className="flex items-center gap-2 font-display text-[15px] font-bold tracking-tight">
               <span
                 aria-hidden="true"
@@ -34,6 +34,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Prospekta
             </Link>
             <nav className="ml-1 flex items-center gap-1 text-[13px]">
+              <Link
+                href="/"
+                className="rounded-full px-3 py-1.5 font-medium text-muted hover:bg-soft hover:text-ink"
+              >
+                Painel
+              </Link>
               <Link
                 href="/config"
                 className="rounded-full px-3 py-1.5 font-medium text-muted hover:bg-soft hover:text-ink"
@@ -50,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Link>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+        <main className="mx-auto w-full max-w-[68rem] flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
       </body>
     </html>
   );

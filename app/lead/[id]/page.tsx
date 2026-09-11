@@ -7,7 +7,6 @@
 //
 // A busca de dados e identica a de antes: so a apresentacao mudou.
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { AdSignal, AiDiagnosis, Lead, Score, SiteAnalysis, SocialAnalysis } from "@/lib/db-types";
@@ -17,7 +16,7 @@ import { SITE_PASTILHA, pastilhaAnuncio, type TomPastilha } from "@/lib/leads/ap
 import { derivarSinaisObjetivos } from "@/lib/leads/sinais-objetivos";
 import { montarDiagnosticoDaLinha } from "@/lib/ia/normalizar-linha";
 import { PROMPT_VERSAO } from "@/lib/ia/prompt";
-import { Pastilha } from "@/components/ui";
+import { Pastilha, Voltar } from "@/components/ui";
 import { Favoritar } from "./favoritar";
 import { ProcessarTudo } from "./processar-tudo";
 import { CopiarDossie } from "./copiar-dossie";
@@ -133,15 +132,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="dossie flex flex-col gap-4 pb-10">
       {/* ---------------------------------------- 1. navegacao, bem discreta */}
-      <div className="flex items-center gap-3 text-[12.5px]">
+      <div className="flex items-center gap-3">
         {pesquisa ? (
-          <Link href={`/pesquisa/${pesquisa.id}`} className="text-muted hover:text-ink">
-            &larr; {pesquisa.nicho} em {pesquisa.regiao_texto}
-          </Link>
+          <Voltar href={`/pesquisa/${pesquisa.id}`}>
+            {pesquisa.nicho} em {pesquisa.regiao_texto}
+          </Voltar>
         ) : (
-          <Link href="/" className="text-muted hover:text-ink">
-            &larr; Pesquisas
-          </Link>
+          <Voltar href="/">Pesquisas</Voltar>
         )}
         <span className="ml-auto flex items-center gap-1.5 text-faint">
           <Favoritar leadId={id} inicial={lead.favorito === true} tamanho="sm" />

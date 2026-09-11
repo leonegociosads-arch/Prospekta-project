@@ -85,8 +85,10 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
-  --shadow-card: 0 1px 2px rgba(20, 20, 40, 0.06), 0 6px 16px -6px rgba(20, 20, 40, 0.1);
-  --shadow-pop: 0 4px 12px rgba(20, 20, 40, 0.1), 0 18px 40px -12px rgba(20, 20, 40, 0.22);
+  /* Sombra minima de proposito (etapa 26): o sistema visual do dossie e
+     "chapado" - borda fina faz a separacao, a sombra e so um resquicio. */
+  --shadow-card: 0 1px 2px rgba(15, 15, 25, 0.05);
+  --shadow-pop: 0 8px 24px -10px rgba(15, 15, 25, 0.18);
 
   --font-sans: var(--font-figtree);
   --font-display: var(--font-bricolage);
@@ -176,17 +178,4 @@ body:has(.dossie) header {
 
 .dossie > * {
   position: relative;
-}
-
-/* No desktop grande o dossie escapa do max-w-3xl do layout e o header
-   acompanha, para os dois ficarem alinhados. */
-@media (min-width: 1280px) {
-  .dossie {
-    margin-left: -9rem;
-    margin-right: -9rem;
-  }
-
-  body:has(.dossie) header > div {
-    max-width: 66rem;
-  }
 }

@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProgressoPesquisa } from "@/lib/leads/progresso";
+import { Cartao, SecaoHeader } from "@/components/ui";
 import { reprocessarPendentesAction } from "./actions";
 import { ESTADO_REPROCESSAR_INICIAL } from "./estado";
 
@@ -38,38 +39,37 @@ export function Progresso({
   }, [progresso.naFila, autoParou, router]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-soft text-sm">⚙️</span>
-            Processamento dos leads
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {progresso.concluido ? (
-              "Tudo processado."
-            ) : progresso.naFila > 0 ? (
-              <>
-                {progresso.naFila} tarefa(s) na fila. Deixe{" "}
-                <span className="font-mono">npm run worker</span> rodando no seu PC.
-              </>
-            ) : (
-              "Alguns leads ainda não foram processados."
-            )}
-          </p>
-        </div>
-        {!progresso.concluido && (
-          <form action={formAction}>
-            <button
-              type="submit"
-              disabled={pending}
-              className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium hover:bg-soft disabled:opacity-60"
-            >
-              {pending ? "Reagendando…" : "Reprocessar pendentes"}
-            </button>
-          </form>
-        )}
-      </div>
+    <Cartao className="flex flex-col gap-3">
+      <SecaoHeader
+        icone="⚙️"
+        tom="accent"
+        titulo="Processamento dos leads"
+        subtitulo={
+          progresso.concluido ? (
+            "Tudo processado."
+          ) : progresso.naFila > 0 ? (
+            <>
+              {progresso.naFila} tarefa(s) na fila. Deixe <span className="font-mono">npm run worker</span>{" "}
+              rodando no seu PC.
+            </>
+          ) : (
+            "Alguns leads ainda não foram processados."
+          )
+        }
+        acao={
+          !progresso.concluido && (
+            <form action={formAction}>
+              <button
+                type="submit"
+                disabled={pending}
+                className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium hover:bg-soft disabled:opacity-60"
+              >
+                {pending ? "Reagendando…" : "Reprocessar pendentes"}
+              </button>
+            </form>
+          )
+        }
+      />
 
       <ul className="flex flex-col gap-2">
         {progresso.etapas.map((e) => {
@@ -120,6 +120,6 @@ export function Progresso({
           {estado.enfileirados} tarefa(s) reagendada(s).
         </p>
       )}
-    </div>
+    </Cartao>
   );
 }

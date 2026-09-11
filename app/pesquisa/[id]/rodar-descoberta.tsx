@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
+import { Cartao, SecaoHeader } from "@/components/ui";
 import { rodarDescobertaAction } from "./actions";
 import { ESTADO_DESCOBERTA_INICIAL } from "./estado";
 
@@ -13,27 +14,24 @@ export function RodarDescoberta({ searchId, jobStatus }: { searchId: string; job
   const jaRodou = jobStatus === "feito" || estado.status === "ok";
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="grid size-7 place-items-center rounded-xl bg-info-soft text-sm">📡</span>
-            Descoberta de empresas
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            Faz 1 busca no Google Places (ate 2 chamadas com a geocodificacao).
-          </p>
-        </div>
-        <form action={formAction}>
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pending ? "Buscando…" : jaRodou ? "Rodar de novo" : "Rodar descoberta"}
-          </button>
-        </form>
-      </div>
+    <Cartao className="flex flex-col gap-3">
+      <SecaoHeader
+        icone="📡"
+        tom="info"
+        titulo="Descoberta de empresas"
+        subtitulo="Faz 1 busca no Google Places (até 2 chamadas com a geocodificação)."
+        acao={
+          <form action={formAction}>
+            <button
+              type="submit"
+              disabled={pending}
+              className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-press disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pending ? "Buscando…" : jaRodou ? "Rodar de novo" : "Rodar descoberta"}
+            </button>
+          </form>
+        }
+      />
 
       {pending && (
         <p className="text-xs text-muted">
@@ -76,6 +74,6 @@ export function RodarDescoberta({ searchId, jobStatus }: { searchId: string; job
           </button>
         </div>
       )}
-    </div>
+    </Cartao>
   );
 }

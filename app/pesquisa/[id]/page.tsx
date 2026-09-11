@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Search } from "@/lib/db-types";
@@ -6,7 +5,7 @@ import { carregarConfigIa } from "@/lib/ia/config-ia";
 import { carregarLeadsDaPesquisa } from "@/lib/leads/consulta";
 import { ordenarLeads } from "@/lib/leads/filtros";
 import { calcularProgressoPesquisa } from "@/lib/leads/progresso";
-import { Aviso } from "@/components/ui";
+import { Aviso, Metrica, Panel, Voltar } from "@/components/ui";
 import { RodarDescoberta } from "./rodar-descoberta";
 import { Progresso } from "./progresso";
 import { GerarDiagnosticos } from "./gerar-diagnosticos";
@@ -75,11 +74,15 @@ export default async function PesquisaPage({
   );
   const comDiagnostico = elegiveis.filter((l) => l.temDiagnostico).length;
 
+  // resumo da pesquisa: derivado dos leads ja carregados, sem consulta nova
+  const analisados = leads.filter((l) => l.score != null).length;
+  const scores = leads.map((l) => l.score).filter((s): s is number => s != null);
+  const scoreMedio = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+  const favoritosCount = leads.filter((l) => l.favorito).length;
+
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/" className="text-sm text-muted hover:text-ink">
-        &larr; Pesquisas
-      </Link>
+      <Voltar href="/">Pesquisas</Voltar>
 
       <div>
         <h1 className="text-xl font-semibold tracking-tight">
@@ -91,12 +94,21 @@ export default async function PesquisaPage({
         </p>
       </div>
 
-      <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <Info rotulo="Descoberta" valor={jobDescoberta?.status ?? "sem job"} />
-        <Info rotulo="Orçamento de chamadas" valor={String(pesquisa.orcamento_chamadas)} />
-        <Info rotulo="Chamadas feitas" valor={String(pesquisa.chamadas_feitas)} />
-        <Info rotulo="Custo estimado" valor={`US$ ${pesquisa.custo_estimado_usd}`} />
-      </dl>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Metrica rotulo="Leads encontrados" valor={String(leads.length)} />
+        <Metrica rotulo="Analisados" valor={String(analisados)} />
+        <Metrica rotulo="Score médio" valor={scoreMedio != null ? String(scoreMedio) : "—"} />
+        <Metrica rotulo="Favoritos" valor={String(favoritosCount)} />
+      </div>
+
+      <Panel rotulo="Consumo de API desta pesquisa">
+        <dl className="grid grid-cols-2 gap-px border-t border-line bg-line sm:grid-cols-4">
+          <Info rotulo="Descoberta" valor={jobDescoberta?.status ?? "sem job"} />
+          <Info rotulo="Orçamento de chamadas" valor={String(pesquisa.orcamento_chamadas)} />
+          <Info rotulo="Chamadas feitas" valor={String(pesquisa.chamadas_feitas)} />
+          <Info rotulo="Custo estimado" valor={`US$ ${pesquisa.custo_estimado_usd}`} />
+        </dl>
+      </Panel>
 
       {jobDescoberta?.ultimo_erro && (
         <Aviso>Último erro da descoberta: {jobDescoberta.ultimo_erro}</Aviso>
@@ -126,8 +138,8 @@ export default async function PesquisaPage({
 
 function Info({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
-    <div className="rounded-xl border border-line bg-card px-3 py-2">
-      <dt className="text-xs text-muted">{rotulo}</dt>
+    <div className="bg-card px-3.5 py-2.5 text-sm">
+      <dt className="text-[11px] text-faint">{rotulo}</dt>
       <dd className="font-mono">{valor}</dd>
     </div>
   );

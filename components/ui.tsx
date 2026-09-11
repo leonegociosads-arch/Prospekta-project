@@ -2,6 +2,7 @@
 // Cores vem dos tokens de app/globals.css (trocam sozinhas no modo escuro).
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 /** Classes de botao, para manter todos iguais. */
 const BTN_BASE =
@@ -41,30 +42,89 @@ const TOM_ICONE = {
   info: "bg-info-soft",
 };
 
-/** Cabecalho de secao: um "azulejo" colorido com emoji + titulo + subtitulo. */
+/** Cabecalho de secao: um "azulejo" colorido com emoji + titulo + subtitulo.
+ *  `acao`, se passado, fica alinhada a direita (ex.: o botao daquele bloco). */
 export function SecaoHeader({
   icone,
   tom = "accent",
   titulo,
   subtitulo,
+  acao,
 }: {
   icone: string;
   tom?: keyof typeof TOM_ICONE;
   titulo: string;
-  subtitulo?: string;
+  subtitulo?: ReactNode;
+  acao?: ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex flex-wrap items-start gap-3">
       <span
         aria-hidden="true"
         className={`grid size-9 flex-shrink-0 place-items-center rounded-xl text-lg ${TOM_ICONE[tom]}`}
       >
         {icone}
       </span>
-      <div>
+      <div className="min-w-0 flex-1">
         <h2 className="text-[15px] font-semibold">{titulo}</h2>
         {subtitulo && <p className="mt-0.5 text-xs text-muted">{subtitulo}</p>}
       </div>
+      {acao}
+    </div>
+  );
+}
+
+/** Link de volta discreto - mesmo estilo usado no topo do dossie do lead.
+ *  Padroniza a navegacao "para tras" em todas as paginas. */
+export function Voltar({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="text-[12.5px] text-muted hover:text-ink">
+      &larr; {children}
+    </Link>
+  );
+}
+
+/** Painel: mesmo container do dossie do lead (borda fina, cantos
+ *  arredondados, sem sombra). `rotulo`, se passado, vira uma barra fina em
+ *  caixa alta no topo - o "PAINEL DO LEAD · DOSSIÊ COMPLETO" generalizado. */
+export function Panel({
+  rotulo,
+  children,
+  className = "",
+}: {
+  rotulo?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`overflow-hidden rounded-2xl border border-line bg-card ${className}`}>
+      {rotulo && (
+        <p className="border-b border-line bg-soft px-3.5 py-[7px] text-[11px] font-bold uppercase tracking-[0.06em] text-faint">
+          {rotulo}
+        </p>
+      )}
+      {children}
+    </section>
+  );
+}
+
+/** Metrica compacta: rotulo em caixa alta + valor grande em mono. Usada nos
+ *  resumos do painel principal, da pesquisa e da configuracao - era o mesmo
+ *  padrao reimplementado em cada pagina, agora e um so componente. */
+export function Metrica({
+  rotulo,
+  valor,
+  sub,
+}: {
+  rotulo: string;
+  valor: string;
+  sub?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-line bg-card px-3 py-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-faint">{rotulo}</p>
+      <p className="mt-[3px] font-mono text-lg font-semibold tabular-nums text-ink">{valor}</p>
+      {sub && <p className="text-[11px] text-faint">{sub}</p>}
     </div>
   );
 }
