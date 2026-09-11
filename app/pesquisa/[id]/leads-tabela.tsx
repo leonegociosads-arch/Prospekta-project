@@ -32,7 +32,7 @@ import { processarLeadsEmLoteAction } from "./actions";
 import type { AcaoEmLote } from "./estado";
 
 const selectCls =
-  "rounded-full border border-line-strong bg-card px-2.5 py-[3px] text-[11.5px] text-muted outline-none focus:border-accent";
+  "rounded-full border border-line bg-painel px-2.5 py-[3px] text-[11.5px] text-muted outline-none transition-colors focus:border-accent";
 
 /** custo estimado por lead do diagnostico com IA (so para avisar o usuario) */
 const CUSTO_IA_POR_LEAD = 0.01;
@@ -219,7 +219,7 @@ export function LeadsTabela({
         value={criterios.busca}
         onChange={(e) => set("busca", e.target.value)}
         placeholder="Buscar por nome, categoria, endereço, telefone…"
-        className="w-full rounded-xl border border-line-strong bg-card px-3 py-1.5 text-[13px] outline-none focus:border-accent"
+        className="w-full rounded-xl border border-line bg-painel px-3 py-1.5 text-[13px] text-ink outline-none transition-colors focus:border-accent"
       />
 
       {/* Filtros rápidos: um clique liga/desliga, com a contagem real ao lado */}

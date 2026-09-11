@@ -36,7 +36,7 @@ export function ListaPesquisas({ pesquisas }: { pesquisas: PesquisaResumo[] }) {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar pesquisa por nicho ou região…"
-          className="w-full rounded-xl border border-line-strong bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+          className="w-full rounded-xl border border-line bg-painel px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-accent"
         />
       )}
 

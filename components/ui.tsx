@@ -141,6 +141,18 @@ export function EstadoVazio({
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-line-strong px-6 py-10 text-center">
+      {/* Único lugar, além do símbolo da marca, onde o radar aparece: aqui ele
+          tem função - é a varredura que ainda não achou nada. */}
+      <svg
+        viewBox="0 0 48 48"
+        fill="none"
+        aria-hidden="true"
+        className="mx-auto mb-3 size-8 text-line-strong"
+      >
+        <circle cx="24" cy="24" r="19" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+        <circle cx="24" cy="24" r="11" stroke="currentColor" strokeWidth="1.5" opacity="0.8" />
+        <circle cx="24" cy="24" r="2.5" fill="currentColor" />
+      </svg>
       <p className="text-sm font-medium text-ink">{titulo}</p>
       {descricao && <p className="mx-auto mt-1 max-w-sm text-xs text-muted">{descricao}</p>}
       {acao && <div className="mt-4 flex justify-center">{acao}</div>}

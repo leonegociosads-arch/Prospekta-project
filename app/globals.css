@@ -1,68 +1,77 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------------ paleta
-   Fundo branco na maior parte. Roxo = so o detalhe da marca / acao principal.
-   verde/amarelo/vermelho = significado fixo (bom / atencao / ruim).
-   azul = informativo (IA). Os tokens trocam sozinhos no modo escuro, entao
-   os componentes quase nao precisam de classes `dark:`.                     */
+/* ==========================================================================
+   IDENTIDADE PROSPEKTA (etapa 30)
+
+   O sistema tem DUAS CAMADAS de cor, e elas não se misturam:
+
+   CAMADA 1 - MARCA E ESTRUTURA (abaixo, "superfícies" e "marca")
+     Fundo, superfícies, bordas, texto neutro e o roxo da marca. É o que dá a
+     cara de "scanner de oportunidades": grafite azulado, escuro, denso.
+
+   CAMADA 2 - SEMÂNTICA DO PRODUTO ("significado", mais abaixo)
+     verde = bom/confirmado · amarelo = parcial/atenção · vermelho =
+     problema (e portanto oportunidade de venda) · azul = informativo.
+     Esses valores comunicam DADO, não estética. Não são tema: são a legenda
+     da tabela e do dossiê. Mexer neles muda o que a tela afirma - por isso
+     ficam iguais mesmo quando a marca muda.
+
+   O verde da MARCA (--brand-green) NÃO é o verde de STATUS (--ok). O primeiro
+   é identidade (aparece só no símbolo); o segundo é informação.
+
+   Como o @theme inline faz cada utilitário apontar direto para a variável
+   base (bg-card -> var(--card)), trocar os valores aqui repinta o app inteiro
+   sem tocar em uma classe sequer dos componentes.
+   ========================================================================== */
 
 :root {
-  /* Pagina cinza bem clara, card branco puro: e o contraste que da profundidade.
-     Cinzas NEUTROS (sem puxar pro roxo). Texto bem escuro. */
-  --canvas: #f5f5f7;
-  --card: #ffffff;
-  --soft: #ededf0;
-  --ink: #161619;
-  --muted: #5c5c64;
-  --faint: #8f8f98;
-  --line: #e2e2e6;
-  --line-strong: #d0d0d6;
+  /* ---------------------------------------------------------- superfícies
+     Escala do mais escuro ao mais claro: canvas < painel < card < soft.
+     canvas = página · painel = moldura/campo · card = conteúdo · soft =
+     cabeçalho de tabela, barra de rótulo, hover neutro. */
+  --canvas: #060b11;
+  --painel: #0b121b;
+  --card: #111b27;
+  --soft: #1a2534;
 
-  /* Roxo: SO no botao, link, barra de progresso e item ativo. */
-  --accent: #6c4bf0;
-  --accent-press: #5a39d8;
-  --accent-soft: #efeafe;
-  --accent-ink: #4a2cc6;
+  /* ----------------------------------------------------------------- texto */
+  --ink: #f5f5f3;
+  --muted: #8d98aa;
+  /* Um pouco mais claro que o #667284 da paleta da marca: neste tom os
+     micro-rótulos (10-11px) ficavam em 3,7:1, abaixo do mínimo AA de 4,5:1.
+     O #667284 original seguiu como cor de placeholder, onde é adequado. */
+  --faint: #808d9f;
+  --placeholder: #667284;
 
-  --ok: #0d9152;
-  --ok-soft: #e2f3e9;
-  --warn: #a5680b;
-  --warn-soft: #f9edd7;
-  --bad: #cf3b3a;
-  --bad-soft: #fbe4e4;
-  --info: #2b66e0;
-  --info-soft: #e6eefc;
-}
+  /* ---------------------------------------------------------------- linhas */
+  --line: #263241;
+  --line-strong: #33425a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #101013;
-    --card: #1b1b1f;
-    --soft: #27272d;
-    --ink: #f0f0f3;
-    --muted: #a6a6b0;
-    --faint: #78787f;
-    --line: #2f2f36;
-    --line-strong: #40404a;
+  /* ------------------------------------------------- marca (roxo + verde)
+     Roxo = ação principal, navegação ativa, foco, proposta.
+     Verde da marca = só o símbolo do radar. Não vira utilitário de status. */
+  --accent: #7547e8;
+  --accent-press: #8a63f0;
+  --accent-soft: #241543;
+  --accent-ink: #c4acff;
+  --brand-green: #00e96b;
 
-    --accent: #9b82ff;
-    --accent-press: #ab96ff;
-    --accent-soft: #241f3d;
-    --accent-ink: #cdbfff;
-
-    --ok: #46c07d;
-    --ok-soft: #16311f;
-    --warn: #dda23e;
-    --warn-soft: #33270f;
-    --bad: #ef6a6a;
-    --bad-soft: #371a1b;
-    --info: #6a9bff;
-    --info-soft: #17233b;
-  }
+  /* ======================================================================
+     CAMADA 2 - SIGNIFICADO. NÃO SUBSTITUIR POR COR DE MARCA.
+     ====================================================================== */
+  --ok: #4ac888;
+  --ok-soft: #12301f;
+  --warn: #e0a63f;
+  --warn-soft: #332711;
+  --bad: #f07070;
+  --bad-soft: #391a1c;
+  --info: #6f9dff;
+  --info-soft: #17233d;
 }
 
 @theme inline {
   --color-canvas: var(--canvas);
+  --color-painel: var(--painel);
   --color-card: var(--card);
   --color-soft: var(--soft);
   --color-ink: var(--ink);
@@ -75,6 +84,7 @@
   --color-accent-press: var(--accent-press);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
+  --color-brand-green: var(--brand-green);
 
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
@@ -85,18 +95,23 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
-  /* Sombra minima de proposito (etapa 26): o sistema visual do dossie e
-     "chapado" - borda fina faz a separacao, a sombra e so um resquicio. */
-  --shadow-card: 0 1px 2px rgba(15, 15, 25, 0.05);
-  --shadow-pop: 0 8px 24px -10px rgba(15, 15, 25, 0.18);
+  /* No escuro a sombra some e só suja a borda: a separação vem da linha.
+     A sombra forte fica só para o que flutua de verdade (modal). */
+  --shadow-card: none;
+  --shadow-pop: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
 
   --font-sans: var(--font-figtree);
-  --font-display: var(--font-bricolage);
+  --font-display: var(--font-figtree);
   --font-mono: var(--font-jetbrains);
 }
 
+/* Tema único e escuro de propósito: a identidade do produto É escura, então
+   não há variante clara para seguir o sistema operacional. Declarar o
+   color-scheme faz os controles nativos (checkbox, select, barra de rolagem)
+   virem escuros também, sem CSS extra. */
 html {
-  color-scheme: light dark;
+  color-scheme: dark;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 body {
@@ -113,69 +128,21 @@ h3 {
   text-wrap: balance;
 }
 
-/* foco de teclado visivel e consistente */
+::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* Foco: contorno sólido para acessibilidade + um halo roxo bem discreto,
+   que é o detalhe de marca. Nada de glow. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
-}
-
-/* ------------------------------------------------------- modo dossie (etapa 25)
-   A pagina /lead/[id] e um "dossie comercial": tem visual proprio, sempre
-   escuro, independente do tema do sistema. Como o @theme inline faz cada
-   utilitario apontar direto para a variavel base (bg-card -> var(--card)),
-   basta redefinir as variaveis aqui que TODOS os componentes filhos ja
-   existentes viram escuros sozinhos - sem tocar em classe nenhuma deles.
-
-   O header do app fica fora desta div, entao e alcancado por :has() para nao
-   sobrar uma barra clara em cima de uma pagina preta.                        */
-
-.dossie,
-body:has(.dossie) header {
-  --canvas: #0c0c0f;
-  --painel: #15151a;
-  --card: #1d1d23;
-  --soft: #26262d;
-  --ink: #f2f2f5;
-  --muted: #a8a8b3;
-  --faint: #76767f;
-  --line: #2b2b33;
-  --line-strong: #3a3a45;
-
-  --accent: #9b82ff;
-  --accent-press: #ab96ff;
-  --accent-soft: #2a2142;
-  --accent-ink: #d3c6ff;
-
-  --ok: #4ac888;
-  --ok-soft: #12301f;
-  --warn: #e0a63f;
-  --warn-soft: #332711;
-  --bad: #f07070;
-  --bad-soft: #391a1c;
-  --info: #6f9dff;
-  --info-soft: #17233d;
-
-  /* sombra minima: no escuro ela some e so suja a borda */
-  --shadow-card: none;
-  --shadow-pop: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
-}
-
-/* pinta a viewport inteira de escuro sem usar 100vw (nao cria rolagem
-   horizontal). O ::before vem antes dos filhos na ordem de pintura; os
-   filhos posicionados ficam por cima. */
-.dossie {
-  position: relative;
-}
-
-.dossie::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: var(--canvas);
-  pointer-events: none;
-}
-
-.dossie > * {
-  position: relative;
+  box-shadow: 0 0 0 3px rgba(117, 71, 232, 0.1);
 }

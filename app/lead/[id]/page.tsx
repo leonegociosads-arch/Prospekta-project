@@ -1,11 +1,10 @@
 // Pagina do lead = DOSSIE COMERCIAL (etapa 25).
 //
-// Visual proprio, sempre escuro: a div raiz tem a classe "dossie", que em
-// app/globals.css redefine as variaveis de cor. Como os utilitarios do Tailwind
-// apontam direto para essas variaveis (@theme inline), todo componente filho
-// ja existente fica escuro sozinho - nenhum deles precisou ser tocado.
+// O app inteiro passou a usar a paleta escura da marca (etapa 30), entao esta
+// pagina nao precisa mais de um tema proprio: os tokens globais ja entregam o
+// fundo grafite, e os utilitarios apontam direto para eles (@theme inline).
 //
-// A busca de dados e identica a de antes: so a apresentacao mudou.
+// A busca de dados e identica a de sempre: so a apresentacao muda aqui.
 
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -130,7 +129,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   const whatsapp = numero.length >= 8 ? numero : null;
 
   return (
-    <div className="dossie flex flex-col gap-4 pb-10">
+    <div className="flex flex-col gap-4 pb-10">
       {/* ---------------------------------------- 1. navegacao, bem discreta */}
       <div className="flex items-center gap-3">
         {pesquisa ? (
@@ -146,7 +145,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* ---------------------------------------------- 2. painel do dossie */}
-      <section className="overflow-hidden rounded-2xl border border-line bg-[var(--painel)]">
+      <section className="overflow-hidden rounded-2xl border border-line bg-painel">
         <p className="border-b border-line bg-soft px-3.5 py-[7px] text-[11px] font-bold uppercase tracking-[0.06em] text-faint">
           Painel do lead · dossiê completo
         </p>
@@ -193,7 +192,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         {/* 3. faixa de sinais: 4 colunas no desktop, 2x2 no celular */}
         <div className="grid grid-cols-2 gap-px border-y border-line bg-line sm:grid-cols-4">
           {sinaisFaixa.map((s) => (
-            <div key={s.rotulo} className="bg-[var(--painel)] px-4 py-3">
+            <div key={s.rotulo} className="bg-painel px-4 py-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.07em] text-faint">{s.rotulo}</p>
               <div className="mt-[5px]">
                 <Pastilha tom={s.tom}>{s.texto}</Pastilha>
@@ -232,7 +231,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(diagnostico.mensagemInicial)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-line-strong bg-card px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:bg-[var(--painel)]"
+              className="rounded-full border border-line-strong bg-card px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:bg-painel"
             >
               Abrir WhatsApp
             </a>

@@ -9,8 +9,8 @@ import { criarPesquisaAction } from "./actions";
 import { ESTADO_INICIAL, type EstadoForm } from "./estado";
 
 const campoBase =
-  "rounded-xl border bg-card px-3 py-2 text-sm outline-none " +
-  "border-line-strong focus:border-accent";
+  "rounded-xl border bg-painel px-3 py-2 text-sm text-ink outline-none transition-colors " +
+  "border-line focus:border-accent";
 
 function erroDe(estado: EstadoForm, campo: string): string | undefined {
   return estado.status === "erro-validacao" ? estado.erros[campo as keyof typeof estado.erros] : undefined;
