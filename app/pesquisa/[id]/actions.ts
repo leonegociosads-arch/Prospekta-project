@@ -8,12 +8,17 @@ import { enfileirarScores } from "@/lib/score/enfileirar";
 import { enfileirarAnalisesSociais } from "@/lib/analise-social/enfileirar";
 import { enfileirarDetecaoAds } from "@/lib/ads/enfileirar";
 import { enfileirarDiagnosticos } from "@/lib/ia/enfileirar";
+import { normalizarDetalhes } from "@/lib/enriquecimento/normalizar";
+import { derivarSinaisObjetivos } from "@/lib/leads/sinais-objetivos";
+import type { AdSignal, Lead, Score, SiteAnalysis, SocialAnalysis } from "@/lib/db-types";
 import type {
   EstadoDescoberta,
   EstadoReprocessar,
   AcaoEmLote,
   EstadoLote,
   EstadoEnfileirarDiagnostico,
+  EstadoDetalhes,
+  ReviewLead,
 } from "./estado";
 
 /** Limite de leads por acao em lote, para nao agendar um caminhao de jobs sem querer. */
@@ -137,5 +142,104 @@ export async function enfileirarDiagnosticosAction(
       status: "erro",
       mensagem: "Erro inesperado ao enfileirar os diagnosticos. Veja o terminal do servidor.",
     };
+  }
+}
+
+/**
+ * Carrega TUDO que existe sobre um lead sem envolver a IA: pontos fortes e
+ * fracos derivados do que ja foi medido, boletim do site, score detalhado,
+ * trafego pago, redes e as avaliacoes ja guardadas no cache local.
+ *
+ * Roda sob demanda, quando o card do lead abre - assim a tabela continua leve.
+ * Sao leituras do nosso proprio banco: nao chama API externa nem gera custo.
+ */
+export async function carregarDetalhesLeadAction(leadId: string): Promise<EstadoDetalhes> {
+  if (typeof leadId !== "string" || leadId.length === 0) {
+    return { status: "erro", mensagem: "Lead inválido." };
+  }
+
+  try {
+    const db = supabaseServer();
+
+    const [leadRes, siteRes, scoreRes, adsRes, sociaisRes] = await Promise.all([
+      db.from("leads").select("*").eq("id", leadId).maybeSingle(),
+      db.from("site_analyses").select("*").eq("lead_id", leadId).maybeSingle(),
+      db.from("scores").select("*").eq("lead_id", leadId).maybeSingle(),
+      db.from("ad_signals").select("*").eq("lead_id", leadId).maybeSingle(),
+      db
+        .from("social_analyses")
+        .select("*")
+        .eq("lead_id", leadId)
+        .order("verificado_em", { ascending: false }),
+    ]);
+
+    if (!leadRes.data) return { status: "erro", mensagem: "Lead não encontrado." };
+
+    const lead = leadRes.data as Lead;
+    const site = (siteRes.data ?? null) as SiteAnalysis | null;
+    const score = (scoreRes.data ?? null) as Score | null;
+    const ads = (adsRes.data ?? null) as AdSignal | null;
+    const sociais = (sociaisRes.data ?? []) as SocialAnalysis[];
+
+    // avaliacoes: so o que ja esta no cache local (nao chama o Google de novo)
+    let reviews: ReviewLead[] = [];
+    if (lead.google_place_id) {
+      const { data: pc } = await db
+        .from("places_cache")
+        .select("detalhes")
+        .eq("google_place_id", lead.google_place_id)
+        .maybeSingle();
+      if (pc?.detalhes) reviews = normalizarDetalhes(pc.detalhes).reviews;
+    }
+
+    const sinais = derivarSinaisObjetivos({
+      lead: {
+        telefone: lead.telefone,
+        site_url: lead.site_url,
+        instagram_url: lead.instagram_url,
+        facebook_url: lead.facebook_url,
+        avaliacao: lead.avaliacao,
+        qtd_avaliacoes: lead.qtd_avaliacoes,
+        status_negocio: lead.status_negocio,
+      },
+      site: site
+        ? {
+            site_existe: site.site_existe,
+            status_http: site.status_http,
+            ttfb_ms: site.ttfb_ms,
+            nota_mobile: site.nota_mobile,
+            tem_viewport: site.tem_viewport,
+            tem_whatsapp: site.tem_whatsapp,
+            tem_formulario: site.tem_formulario,
+            tem_cta: site.tem_cta,
+            tem_meta_pixel: site.tem_meta_pixel,
+            tem_ga: site.tem_ga,
+            erro: site.erro,
+          }
+        : null,
+      ads: ads ? { veredito: ads.veredito, confianca: ads.confianca } : null,
+      sociais: sociais.map((s) => ({ plataforma: s.plataforma, status: s.status })),
+    });
+
+    return {
+      status: "ok",
+      detalhes: {
+        sinais,
+        site,
+        score,
+        ads,
+        sociais,
+        reviews,
+        horarios: Array.isArray(lead.horarios)
+          ? (lead.horarios as unknown[]).filter((h): h is string => typeof h === "string")
+          : [],
+        mapsUri: lead.maps_uri ?? null,
+        telefoneInternacional: lead.telefone_internacional ?? null,
+        enriquecidoEm: lead.enriquecido_em ?? null,
+      },
+    };
+  } catch (e) {
+    console.error("[carregarDetalhesLead] excecao:", e);
+    return { status: "erro", mensagem: "Não foi possível carregar os detalhes deste lead." };
   }
 }

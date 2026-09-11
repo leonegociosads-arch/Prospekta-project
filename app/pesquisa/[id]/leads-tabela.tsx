@@ -437,7 +437,7 @@ export function LeadsTabela({
         &ldquo;não&rdquo;. Clique na linha para ver o resumo; o &rsaquo; abre a página completa.
       </p>
 
-      {aberto && <CardLead lead={aberto} onClose={() => setAberto(null)} />}
+      {aberto && <CardLead key={aberto.id} lead={aberto} onClose={() => setAberto(null)} />}
     </div>
   );
 }
