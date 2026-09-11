@@ -182,11 +182,12 @@ export function LeadsTabela({
     });
   }
 
-  /** Clique na linha abre o lead - menos quando o clique foi num controle
-   *  (checkbox, estrela, link, botao), para nao navegar sem querer. */
-  function aoClicarLinha(e: ReactMouseEvent<HTMLTableRowElement>, id: string) {
+  /** Clique na linha abre o CARD de resumo (rapido, sem custo, sem IA) - menos
+   *  quando o clique foi num controle (checkbox, estrela, link, botao). O passo
+   *  caro (diagnostico com IA) fica no botao dentro do card e no chevron. */
+  function aoClicarLinha(e: ReactMouseEvent<HTMLTableRowElement>, lead: LeadEnriquecido) {
     if ((e.target as HTMLElement).closest("a,button,input,label")) return;
-    router.push(`/lead/${id}`);
+    setAberto(lead);
   }
 
   if (leads.length === 0) {
@@ -339,7 +340,7 @@ export function LeadsTabela({
                 return (
                   <tr
                     key={l.id}
-                    onClick={(e) => aoClicarLinha(e, l.id)}
+                    onClick={(e) => aoClicarLinha(e, l)}
                     className={`cursor-pointer border-b border-line transition-colors last:border-0 ${
                       marcado ? "bg-accent-soft" : "hover:bg-soft"
                     }`}
@@ -360,12 +361,13 @@ export function LeadsTabela({
                       <Score score={l.score} />
                     </td>
                     <td className="px-3 py-2">
-                      <Link
-                        href={`/lead/${l.id}`}
-                        className="text-[13px] font-semibold leading-tight text-ink underline-offset-2 hover:underline"
+                      <button
+                        type="button"
+                        onClick={() => setAberto(l)}
+                        className="text-left text-[13px] font-semibold leading-tight text-ink underline-offset-2 hover:underline"
                       >
                         {l.nome}
-                      </Link>
+                      </button>
                       {l.temDiagnostico && (
                         <span className="ml-1.5 align-[1px] font-mono text-[9.5px] font-bold uppercase text-accent-ink">
                           IA
@@ -410,15 +412,14 @@ export function LeadsTabela({
                       </div>
                     </td>
                     <td className="px-0 py-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setAberto(l)}
-                        title="Resumo rápido, sem sair da lista"
-                        aria-label={`Resumo rápido de ${l.nome}`}
-                        className="px-1 text-[15px] leading-none text-faint hover:text-ink"
+                      <Link
+                        href={`/lead/${l.id}`}
+                        title="Abrir a página completa (diagnóstico com IA)"
+                        aria-label={`Abrir a página completa de ${l.nome}`}
+                        className="inline-block px-1 text-[15px] leading-none text-faint hover:text-ink"
                       >
                         ›
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 );
@@ -433,7 +434,7 @@ export function LeadsTabela({
         <span className="font-semibold text-warn">Amarelo</span> = parcial, olhar melhor ·{" "}
         <span className="font-semibold text-bad">Vermelho</span> = problema (= oportunidade de venda) ·{" "}
         <span className="font-semibold text-muted">Cinza</span> = não deu pra checar, não é
-        &ldquo;não&rdquo;. Clique na linha para abrir o dossiê.
+        &ldquo;não&rdquo;. Clique na linha para ver o resumo; o &rsaquo; abre a página completa.
       </p>
 
       {aberto && <CardLead lead={aberto} onClose={() => setAberto(null)} />}
