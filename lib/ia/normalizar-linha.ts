@@ -50,12 +50,40 @@ export function confiancaDaLinha(v: unknown): ConfiancaIa {
 export type LinhaDossie = Record<string, unknown>;
 
 export function montarDiagnosticoDaLinha(row: LinhaDossie): DiagnosticoIa {
+  const pontosFracos = arrTexto(row.pontos_fracos);
+  const proposta = propostaDaLinha(row.proposta);
+  const estrategia = estrategiaDaLinha(row.estrategia);
+
+  // ---- fallback para diagnosticos da etapa 14 (prompt v1) ----
+  // Diagnosticos antigos gravaram em outras colunas. Em vez de mostrar o
+  // dossie vazio, reaproveitamos o que existe. Nada e inventado: e o mesmo
+  // texto que a IA escreveu na epoca, so remapeado para o bloco equivalente.
+  const legadoProblemas = arrTexto(row.problemas);
+  const legadoOportunidades = arrTexto(row.oportunidades);
+  const legadoServico = txt(row.servico_sugerido);
+  const legadoAngulo = txt(row.angulo_comercial) || txt(row.angulo_de_entrada);
+
+  const temPropostaV2 = proposta.servico !== "" || proposta.escopo !== "";
+  const temEstrategiaV2 = estrategia.canal !== "" || estrategia.gatilhos.length > 0;
+
   return {
     resumo: txt(row.resumo),
     pontosFortes: arrTexto(row.pontos_fortes),
-    pontosFracos: arrTexto(row.pontos_fracos),
-    proposta: propostaDaLinha(row.proposta),
-    estrategia: estrategiaDaLinha(row.estrategia),
+    // "oportunidades" do v1 era exatamente o "dinheiro na mesa" deste bloco
+    pontosFracos:
+      pontosFracos.length > 0 ? pontosFracos : [...legadoProblemas, ...legadoOportunidades],
+    proposta: temPropostaV2
+      ? proposta
+      : { servico: legadoServico, escopo: "", justificativa: "" },
+    estrategia: temEstrategiaV2
+      ? estrategia
+      : {
+          canal: "",
+          melhorHorario: "",
+          gatilhos: legadoAngulo
+            ? [{ titulo: "Ângulo comercial", descricao: legadoAngulo, fonte: "diagnóstico anterior" }]
+            : [],
+        },
     mensagemInicial: txt(row.mensagem_inicial),
     objecoes: objecoesDaLinha(row.objecoes),
     confianca: confiancaDaLinha(row.confianca),

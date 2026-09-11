@@ -117,3 +117,76 @@ h3 {
   outline-offset: 2px;
   border-radius: 6px;
 }
+
+/* ------------------------------------------------------- modo dossie (etapa 25)
+   A pagina /lead/[id] e um "dossie comercial": tem visual proprio, sempre
+   escuro, independente do tema do sistema. Como o @theme inline faz cada
+   utilitario apontar direto para a variavel base (bg-card -> var(--card)),
+   basta redefinir as variaveis aqui que TODOS os componentes filhos ja
+   existentes viram escuros sozinhos - sem tocar em classe nenhuma deles.
+
+   O header do app fica fora desta div, entao e alcancado por :has() para nao
+   sobrar uma barra clara em cima de uma pagina preta.                        */
+
+.dossie,
+body:has(.dossie) header {
+  --canvas: #0c0c0f;
+  --painel: #15151a;
+  --card: #1d1d23;
+  --soft: #26262d;
+  --ink: #f2f2f5;
+  --muted: #a8a8b3;
+  --faint: #76767f;
+  --line: #2b2b33;
+  --line-strong: #3a3a45;
+
+  --accent: #9b82ff;
+  --accent-press: #ab96ff;
+  --accent-soft: #2a2142;
+  --accent-ink: #d3c6ff;
+
+  --ok: #4ac888;
+  --ok-soft: #12301f;
+  --warn: #e0a63f;
+  --warn-soft: #332711;
+  --bad: #f07070;
+  --bad-soft: #391a1c;
+  --info: #6f9dff;
+  --info-soft: #17233d;
+
+  /* sombra minima: no escuro ela some e so suja a borda */
+  --shadow-card: none;
+  --shadow-pop: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+}
+
+/* pinta a viewport inteira de escuro sem usar 100vw (nao cria rolagem
+   horizontal). O ::before vem antes dos filhos na ordem de pintura; os
+   filhos posicionados ficam por cima. */
+.dossie {
+  position: relative;
+}
+
+.dossie::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--canvas);
+  pointer-events: none;
+}
+
+.dossie > * {
+  position: relative;
+}
+
+/* No desktop grande o dossie escapa do max-w-3xl do layout e o header
+   acompanha, para os dois ficarem alinhados. */
+@media (min-width: 1280px) {
+  .dossie {
+    margin-left: -9rem;
+    margin-right: -9rem;
+  }
+
+  body:has(.dossie) header > div {
+    max-width: 66rem;
+  }
+}

@@ -147,6 +147,16 @@ export function Pastilha({
   );
 }
 
+/** Tag minuscula de evidencia/fonte ("HTTP 522", "Google Places", "IA").
+ *  Fica ao lado do texto para dizer de onde o dado saiu. */
+export function TagFonte({ children }: { children: ReactNode }) {
+  return (
+    <span className="ml-1.5 inline-block break-words rounded-[5px] bg-soft px-1.5 py-px align-[1px] font-mono text-[10px] leading-[1.5] text-faint">
+      {children}
+    </span>
+  );
+}
+
 /** Selo de score com cor por faixa: verde alto, amarelo medio, vermelho baixo. */
 export function SeloScore({ score }: { score: number | null }) {
   if (score == null) return <span className="text-xs text-faint">—</span>;
@@ -162,19 +172,5 @@ export function SeloScore({ score }: { score: number | null }) {
     >
       {score}
     </span>
-  );
-}
-
-/** Score grande (numero solto, sem fundo), para o cabecalho da pagina do lead.
- *  Mesma faixa de cor do SeloScore. */
-export function ScoreGrande({ score }: { score: number | null }) {
-  const cor = score == null ? "text-faint" : score >= 70 ? "text-ok" : score >= 40 ? "text-warn" : "text-bad";
-  return (
-    <div className="text-right">
-      <p className={`font-mono text-3xl font-semibold leading-none tabular-nums ${cor}`}>
-        {score ?? "—"}
-      </p>
-      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-faint">Score</p>
-    </div>
   );
 }
