@@ -13,9 +13,10 @@
    CAMADA 2 - SEMÂNTICA DO PRODUTO ("significado", mais abaixo)
      verde = bom/confirmado · amarelo = parcial/atenção · vermelho =
      problema (e portanto oportunidade de venda) · azul = informativo.
-     Esses valores comunicam DADO, não estética. Cada tema tem o seu proprio
-     tom (o do claro e o mesmo que o Prospekta ja usava antes da identidade
-     escura), mas o SIGNIFICADO de cada cor nunca muda.
+     Esses valores comunicam DADO, não estética - por isso são FIXOS: não
+     trocam entre claro e escuro. O botão de tema muda só a CAMADA 1
+     (fundo/superfície/texto/borda); os badges, o gráfico e a legenda ficam
+     exatamente com a mesma cor nos dois temas.
 
    O verde da MARCA (--brand-green) NÃO é o verde de STATUS (--ok). O primeiro
    é identidade (aparece só no símbolo, igual nos dois temas); o segundo é
@@ -113,14 +114,11 @@
 
   color-scheme: light;
 
-  --ok: #0d9152;
-  --ok-soft: #e2f3e9;
-  --warn: #a5680b;
-  --warn-soft: #f9edd7;
-  --bad: #cf3b3a;
-  --bad-soft: #fbe4e4;
-  --info: #2b66e0;
-  --info-soft: #e6eefc;
+  /* ok/warn/bad/info NAO entram aqui de proposito: o usuario pediu que os
+     "detalhezinhos" (verde/amarelo/vermelho/azul espalhados pela tela -
+     badges, grafico, legenda) fiquem exatamente iguais nos dois temas. Eles
+     ficam de fora deste bloco e continuam herdando os valores do :root
+     acima em qualquer tema - so fundo/superficie/texto/borda mudam. */
 }
 
 @theme inline {
