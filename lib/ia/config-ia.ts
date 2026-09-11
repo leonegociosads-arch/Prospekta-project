@@ -1,8 +1,9 @@
 // Configuracao do diagnostico com IA. Tudo vem de variaveis de ambiente,
 // com valores padrao seguros (ver .env.example).
 //
-// Escolhas desta instalacao (etapa 14): Gemini 2.0 Flash, teto US$ 5/mes,
-// elegivel quando score >= 70 OU entre os 5 melhores da pesquisa.
+// Escolhas desta instalacao: Gemini 3.5 Flash-Lite (barato e suficiente para o
+// JSON do diagnostico), teto US$ 5/mes, elegivel quando score >= 70 OU entre os
+// 5 melhores da pesquisa. O modelo pode ser trocado por PROSPEKTA_IA_MODELO.
 //
 // PROTECAO (etapa 15): todo numero e limitado a uma faixa segura (LIMITES_IA).
 // Ex.: PROSPEKTA_IA_TETO_MENSAL_USD=9999 e cortado para o teto maximo; a tela
@@ -11,7 +12,7 @@
 import { numeroDeEnv } from "@/lib/guardas/config";
 
 export type ConfigIa = {
-  /** id do modelo (ex.: "gemini-2.0-flash"). Precos conhecidos em custos.ts. */
+  /** id do modelo (ex.: "gemini-3.5-flash-lite"). Precos conhecidos em custos.ts. */
   modelo: string;
   /** score minimo (0-100) para o lead entrar no diagnostico em lote. */
   scoreMinimo: number;
@@ -35,7 +36,9 @@ export const LIMITES_IA = {
   temperatura: { min: 0, max: 2, padrao: 0 },
 } as const;
 
-export const MODELO_PADRAO = "gemini-2.0-flash";
+// Google aposentou os modelos gemini-2.x para novas chaves em 2026.
+// Estaveis atuais: gemini-3.5-flash-lite (barato), gemini-3.6-flash (mais forte).
+export const MODELO_PADRAO = "gemini-3.5-flash-lite";
 
 export function carregarConfigIa(): ConfigIa {
   return {

@@ -1,6 +1,6 @@
 // Precos dos modelos de IA, em USD por 1 milhao de tokens.
 //
-// Fonte: paginas de preco dos provedores (jan/2026). Se um provedor mudar a
+// Fonte: paginas de preco dos provedores (set/2026). Se um provedor mudar a
 // tabela, ajuste AQUI - e o unico lugar que calcula custo de IA.
 //
 // O custo real de cada chamada e calculado com os tokens que a API devolve,
@@ -9,7 +9,13 @@
 export type PrecoModelo = { entradaPorMilhao: number; saidaPorMilhao: number };
 
 export const PRECOS_IA: Record<string, PrecoModelo> = {
-  // Google Gemini (AI Studio / API)
+  // Google Gemini (AI Studio / API) - atuais (set/2026)
+  "gemini-3.5-flash-lite": { entradaPorMilhao: 0.3, saidaPorMilhao: 2.5 },
+  "gemini-3.6-flash": { entradaPorMilhao: 0.75, saidaPorMilhao: 3.75 },
+  "gemini-3.1-flash-lite": { entradaPorMilhao: 0.25, saidaPorMilhao: 1.5 },
+  "gemini-flash-lite-latest": { entradaPorMilhao: 0.3, saidaPorMilhao: 2.5 },
+  "gemini-flash-latest": { entradaPorMilhao: 0.75, saidaPorMilhao: 3.75 },
+  // Gemini 2.x - aposentados para novas chaves, mantidos so para linhas antigas
   "gemini-2.0-flash": { entradaPorMilhao: 0.1, saidaPorMilhao: 0.4 },
   "gemini-2.0-flash-lite": { entradaPorMilhao: 0.075, saidaPorMilhao: 0.3 },
   "gemini-2.5-flash": { entradaPorMilhao: 0.3, saidaPorMilhao: 2.5 },
