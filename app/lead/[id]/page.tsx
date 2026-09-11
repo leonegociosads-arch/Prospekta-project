@@ -7,7 +7,7 @@ import { normalizarDetalhes } from "@/lib/enriquecimento/normalizar";
 import { situacaoDoSite } from "@/lib/leads/consulta";
 import { SITE_PASTILHA, pastilhaAnuncio } from "@/lib/leads/apresentacao";
 import { montarDiagnosticoDaLinha } from "@/lib/ia/normalizar-linha";
-import { Cartao, Pastilha, SeloScore } from "@/components/ui";
+import { Cartao, Pastilha, ScoreGrande } from "@/components/ui";
 import { AnalisarSite } from "./analisar";
 import { RecalcularScore } from "./score";
 import { EnriquecerLead } from "./enriquecer";
@@ -110,52 +110,57 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
   const diagnostico = diag && !diag.erro ? montarDiagnosticoDaLinha(diag) : null;
 
+  const numeroWhatsapp = (lead.telefone_internacional || lead.telefone || "").replace(/\D/g, "");
+  const whatsapp = numeroWhatsapp.length >= 8 ? numeroWhatsapp : null;
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        {pesquisas[0] && (
-          <Link href={`/pesquisa/${pesquisas[0].id}`} className="text-sm text-muted hover:text-ink">
-            &larr; {pesquisas[0].nicho} em {pesquisas[0].regiao_texto}
-          </Link>
-        )}
-        <div className="flex items-start gap-2">
-          <Favoritar leadId={id} inicial={lead.favorito === true} />
-          <h1 className="text-xl font-semibold tracking-tight">{lead.nome}</h1>
-        </div>
-        <p className="text-sm text-muted">
-          {lead.categoria ?? "—"}
-          {lead.endereco ? ` · ${lead.endereco}` : ""}
-          {lead.avaliacao != null && (
-            <span className="tabular-nums"> · ★ {lead.avaliacao} ({lead.qtd_avaliacoes ?? 0})</span>
-          )}
-        </p>
-        <p className="text-sm">
-          {lead.site_url ? (
-            <a
-              href={lead.site_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted underline underline-offset-2"
-            >
-              {lead.site_url}
-            </a>
-          ) : (
-            <span className="text-faint">sem site cadastrado</span>
-          )}
-        </p>
-      </div>
+      {pesquisas[0] && (
+        <Link href={`/pesquisa/${pesquisas[0].id}`} className="text-sm text-muted hover:text-ink">
+          &larr; {pesquisas[0].nicho} em {pesquisas[0].regiao_texto}
+        </Link>
+      )}
 
-      {/* ---------- 1 clique: roda tudo e mostra o dossie ---------- */}
-      <Cartao className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted">Score</span>
-          <SeloScore score={score?.total ?? null} />
+      {/* ---------- cabecalho: identidade + score + 1 clique (estilo do mockup) ---------- */}
+      <Cartao className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-start gap-2">
+              <Favoritar leadId={id} inicial={lead.favorito === true} />
+              <h1 className="text-xl font-semibold tracking-tight">{lead.nome}</h1>
+            </div>
+            <p className="text-sm text-muted">
+              {lead.categoria ?? "—"}
+              {lead.endereco ? ` · ${lead.endereco}` : ""}
+              {lead.avaliacao != null && (
+                <span className="tabular-nums"> · ★ {lead.avaliacao} ({lead.qtd_avaliacoes ?? 0})</span>
+              )}
+            </p>
+            <p className="text-sm">
+              {lead.site_url ? (
+                <a
+                  href={lead.site_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted underline underline-offset-2"
+                >
+                  {lead.site_url}
+                </a>
+              ) : (
+                <span className="text-faint">sem site cadastrado</span>
+              )}
+            </p>
+          </div>
+          <ScoreGrande score={score?.total ?? null} />
         </div>
-        <ProcessarTudo leadId={id} jaTemDossie={!!diagnostico} />
+
+        <div className="border-t border-line pt-4">
+          <ProcessarTudo leadId={id} jaTemDossie={!!diagnostico} />
+        </div>
       </Cartao>
 
-      {/* ---------- 4 sinais de relance ---------- */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {/* ---------- 4 sinais de relance, num bloco so (estilo do mockup) ---------- */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-card sm:grid-cols-4">
         <CelulaSinal titulo="Anúncios" pastilha={anuncioPastilha} />
         <CelulaSinal titulo="Site" pastilha={sitePastilha} />
         <CelulaSinal titulo="Redes" pastilha={redesPastilha} />
@@ -164,7 +169,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
       {/* ---------- o dossie ---------- */}
       {diagnostico ? (
-        <Dossie diagnostico={diagnostico} modelo={diag?.modelo ?? null} atualizadoEm={diag?.atualizado_em ?? null} />
+        <Dossie
+          diagnostico={diagnostico}
+          modelo={diag?.modelo ?? null}
+          atualizadoEm={diag?.atualizado_em ?? null}
+          custoUsd={diag?.custo_usd ?? null}
+          whatsapp={whatsapp}
+        />
       ) : diag?.erro ? (
         <Cartao className="bg-warn-soft">
           <p className="text-sm text-warn">O último diagnóstico com IA falhou: {diag.erro}</p>
@@ -520,7 +531,7 @@ function CelulaSinal({
   pastilha: { texto: string; tom: "ok" | "atencao" | "ruim" | "info" | "neutro" | "apagado" };
 }) {
   return (
-    <div className="rounded-xl border border-line bg-card p-3">
+    <div className="bg-card p-3">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-faint">{titulo}</p>
       <div className="mt-1.5">
         <Pastilha tom={pastilha.tom}>{pastilha.texto}</Pastilha>

@@ -6,15 +6,21 @@
 import type { ReactNode } from "react";
 import type { DiagnosticoIa } from "@/lib/ia/tipos";
 import { Cartao } from "@/components/ui";
+import { CopiarDossie } from "./copiar-dossie";
 
 export function Dossie({
   diagnostico,
   modelo,
   atualizadoEm,
+  custoUsd,
+  whatsapp,
 }: {
   diagnostico: DiagnosticoIa;
   modelo: string | null;
   atualizadoEm: string | null;
+  custoUsd?: number | null;
+  /** telefone so digitos (com DDI), pronto para wa.me - null se nao houver */
+  whatsapp: string | null;
 }) {
   const CONF_LABEL: Record<string, string> = { alta: "alta", media: "média", baixa: "baixa" };
 
@@ -145,13 +151,59 @@ export function Dossie({
         </details>
       )}
 
+      {/* ---------- rodape: acoes + procedencia (etapa 23, estilo do mockup) ---------- */}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-soft px-4 py-3">
+        <CopiarDossie texto={textoParaCopiar(diagnostico)} />
+        {whatsapp && diagnostico.mensagemInicial && (
+          <a
+            href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(diagnostico.mensagemInicial)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-line-strong bg-card px-3 py-1.5 text-xs font-medium hover:bg-soft"
+          >
+            Abrir WhatsApp
+          </a>
+        )}
+        <p className="ml-auto font-mono text-[11px] text-faint">
+          {modelo ?? "IA"}
+          {custoUsd ? ` · US$ ${custoUsd.toFixed(5)}` : ""} · confiança {CONF_LABEL[diagnostico.confianca] ?? diagnostico.confianca}
+          {atualizadoEm ? ` · ${new Date(atualizadoEm).toLocaleString("pt-BR")}` : ""}
+        </p>
+      </div>
       <p className="text-[11px] text-faint">
-        Texto gerado por {modelo ?? "IA"}
-        {atualizadoEm ? ` em ${new Date(atualizadoEm).toLocaleString("pt-BR")}` : ""}. Baseado só
-        nos dados coletados pelo Prospekta — confira antes de usar.
+        Baseado só nos dados coletados pelo Prospekta — confira antes de usar.
       </p>
     </div>
   );
+}
+
+/** Monta uma versao em texto simples do dossie, para o botao "Copiar dossiê". */
+function textoParaCopiar(d: DiagnosticoIa): string {
+  const linhas: string[] = [];
+  linhas.push("RESUMO", d.resumo, "");
+  if (d.pontosFortes.length) linhas.push("PONTOS FORTES", ...d.pontosFortes.map((p) => `- ${p}`), "");
+  if (d.pontosFracos.length) linhas.push("PONTOS FRACOS", ...d.pontosFracos.map((p) => `- ${p}`), "");
+  if (d.proposta.servico) {
+    linhas.push(
+      "PROPOSTA",
+      `Serviço: ${d.proposta.servico}`,
+      d.proposta.escopo ? `Escopo: ${d.proposta.escopo}` : "",
+      d.proposta.justificativa ? `Por quê: ${d.proposta.justificativa}` : "",
+      "",
+    );
+  }
+  if (d.estrategia.gatilhos.length) {
+    linhas.push(
+      `ESTRATÉGIA (canal: ${d.estrategia.canal || "—"}${d.estrategia.melhorHorario ? `, ${d.estrategia.melhorHorario}` : ""})`,
+      ...d.estrategia.gatilhos.map((g) => `- ${g.titulo}: ${g.descricao} [${g.fonte}]`),
+      "",
+    );
+  }
+  if (d.mensagemInicial) linhas.push("MENSAGEM INICIAL", d.mensagemInicial, "");
+  if (d.objecoes.length) {
+    linhas.push("OBJEÇÕES", ...d.objecoes.map((o) => `P: ${o.pergunta}\nR: ${o.resposta}`), "");
+  }
+  return linhas.filter((l) => l !== undefined).join("\n").trim();
 }
 
 const TOM_TITULO: Record<string, string> = {

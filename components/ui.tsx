@@ -164,3 +164,17 @@ export function SeloScore({ score }: { score: number | null }) {
     </span>
   );
 }
+
+/** Score grande (numero solto, sem fundo), para o cabecalho da pagina do lead.
+ *  Mesma faixa de cor do SeloScore. */
+export function ScoreGrande({ score }: { score: number | null }) {
+  const cor = score == null ? "text-faint" : score >= 70 ? "text-ok" : score >= 40 ? "text-warn" : "text-bad";
+  return (
+    <div className="text-right">
+      <p className={`font-mono text-3xl font-semibold leading-none tabular-nums ${cor}`}>
+        {score ?? "—"}
+      </p>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-faint">Score</p>
+    </div>
+  );
+}
